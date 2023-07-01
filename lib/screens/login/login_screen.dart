@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:kitapp/const/app_colors.dart';
-import 'package:kitapp/const/app_edge_insets.dart';
-import 'package:kitapp/const/app_font_size.dart';
-import 'package:kitapp/const/app_radius.dart';
-import 'package:kitapp/const/app_sizes.dart';
+import 'package:kartal/kartal.dart';
+import 'package:kitapp/screens/register/register_screen.dart';
+
+import '../../base/common_widgets/app_button.dart';
+import '../../base/common_widgets/app_text_field.dart';
+import '../../const/app_colors.dart';
+import '../../const/app_edge_insets.dart';
+import '../../const/app_font_size.dart';
+import '../../const/app_radius.dart';
+import '../../const/app_sizes.dart';
+import '../../const/app_text.dart';
+import '../home/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -24,26 +31,27 @@ class _LoginScreenState extends State<LoginScreen> {
             Expanded(
               child: Container(
                 width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
-                  ),
-                ),
+                decoration: buildBoxDecoration(),
                 child: Padding(
-                  padding: const EdgeInsets.all(20.0),
+                  padding: context.padding.medium,
                   child: SingleChildScrollView(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        buildInput(hintText: "Email", upText: "Email"),
+                        AppTextField(hintText: AppText.email, icon: Icons.email),
                         buildSizedBox(AppSizes.small),
-                        buildInput(hintText: "Password", upText: "Password"),
+                        AppTextField(hintText: AppText.password, icon: Icons.security),
                         buildSizedBox(AppSizes.large),
-                        loginButton(),
+                        AppButton(
+                          text: AppText.login,
+                          context: context,
+                          onTap: () {
+                            // todo
+                            Navigator.of(context).push(MaterialPageRoute(builder: (context) => HomeScreen()));
+                          },
+                        ),
                         buildSizedBox(AppSizes.middle),
-                        signInButton(),
+                        signInButton(context),
                       ],
                     ),
                   ),
@@ -56,45 +64,20 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget buildInput({required String upText, required String hintText}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          upText,
-          style: const TextStyle(
-            color: Colors.black,
-            fontSize: AppFontSize.large,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        buildSizedBox(AppSizes.small),
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadius.small),
-            color: Colors.black,
-          ),
-          child: TextField(
-            style: const TextStyle(color: Colors.white),
-            decoration: InputDecoration(
-              border: InputBorder.none,
-              prefixIcon: const Icon(
-                Icons.email,
-                color: AppColors.primary,
-              ),
-              hintText: hintText,
-              hintStyle: const TextStyle(color: Colors.white),
-            ),
-          ),
-        ),
-      ],
+  BoxDecoration buildBoxDecoration() {
+    return const BoxDecoration(
+      color: AppColors.white,
+      borderRadius: BorderRadius.only(
+        topLeft: Radius.circular(30),
+        topRight: Radius.circular(30),
+      ),
     );
   }
 
   Widget buildIcon(BuildContext context) {
     return FittedBox(
       child: Container(
-        padding: const EdgeInsets.all(AppEdgeInsets.small),
+        padding: EdgeInsets.all(AppEdgeInsets.small),
         height: MediaQuery.of(context).size.height / 3,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(AppRadius.large),
@@ -104,39 +87,16 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget loginButton() {
+  Widget signInButton(BuildContext context) {
     return InkWell(
-      onTap: () {},
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(30),
-          color: Colors.black,
-        ),
-        child: const Center(
-          child: Padding(
-            padding: EdgeInsets.all(10.0),
-            child: Text(
-              'Log In',
-              style: TextStyle(
-                color: AppColors.white,
-                fontSize: AppFontSize.xlarge,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget signInButton() {
-    return InkWell(
-      onTap: () {},
-      child: const Center(
+      onTap: () {
+        context.route.navigateToPage(RegisterPage());
+      },
+      child: Center(
         child: Text(
-          'Or Sign In',
+          AppText.orSignIn,
           style: TextStyle(
-            color: Colors.blue,
+            color: AppColors.blueAccent,
             fontSize: AppFontSize.small,
             fontWeight: FontWeight.w500,
           ),
