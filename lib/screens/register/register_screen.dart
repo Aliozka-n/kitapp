@@ -35,6 +35,8 @@ class _RegisterPageState extends State<RegisterPage> {
                 AppTextField(hintText: "Email", icon: Icons.email),
                 AppSizedBox.small,
                 AppTextField(hintText: "Şifre", icon: Icons.security),
+                AppSizedBox.small,
+                AppTextField(hintText: "Şifre", icon: Icons.security),
                 AppSizedBox.large,
                 AppButton(
                   text: AppText.signIn,
