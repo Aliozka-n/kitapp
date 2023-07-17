@@ -39,9 +39,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         AppTextField(hintText: AppText.email, icon: Icons.email),
-                        buildSizedBox(AppSizes.small),
                         AppTextField(hintText: AppText.password, icon: Icons.security),
-                        buildSizedBox(AppSizes.large),
+                        buildSizedBox(AppSizes.middle),
                         AppButton(
                           text: AppText.login,
                           context: context,

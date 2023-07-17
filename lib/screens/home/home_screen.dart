@@ -1,15 +1,21 @@
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:kitapp/const/app_colors.dart';
-import 'package:kitapp/screens/home/view/add_view.dart';
+import 'package:kitapp/const/app_text.dart';
+import 'package:kitapp/screens/add_book/add_view.dart';
 import 'package:kitapp/screens/home/view/home_view.dart';
-import 'package:kitapp/screens/home/view/message_view.dart';
-import 'package:kitapp/screens/home/view/profile_view.dart';
+import 'package:kitapp/screens/message/message_view.dart';
+import 'package:kitapp/screens/profile/profile_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
 
-  List<Widget> tabBarList = [HomeView(), AddView(), MessageView(), ProfileView()];
+  List<Widget> tabBarList = [
+    HomeView(),
+    AddView(),
+    MessageView(),
+    ProfileView()
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -26,13 +32,14 @@ class HomeScreen extends StatelessWidget {
   }
 
   TabBarView buildTabBarView() {
-    return TabBarView(children: tabBarList);
+    return TabBarView(
+        physics: const NeverScrollableScrollPhysics(), children: tabBarList);
   }
 
   AppBar buildAppBar() {
     return AppBar(
       backgroundColor: AppColors.primary,
-      title: Text("KitApp"),
+      title: Text(AppText.appName),
       centerTitle: true,
     );
   }
