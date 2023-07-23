@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:kartal/kartal.dart';
-import 'package:kitapp/screens/register/register_screen.dart';
+import 'package:kitapp/base/common_widgets/app_sizeed_box.dart';
+import 'package:kitapp/screens/login/widgets/remember_me.dart';
+import 'package:kitapp/screens/login/widgets/sign_in_button.dart';
 
 import '../../base/common_widgets/app_button.dart';
 import '../../base/common_widgets/app_text_field.dart';
 import '../../const/app_colors.dart';
-import '../../const/app_edge_insets.dart';
-import '../../const/app_font_size.dart';
 import '../../const/app_radius.dart';
-import '../../const/app_sizes.dart';
 import '../../const/app_text.dart';
 import '../home/home_screen.dart';
 
@@ -30,7 +29,6 @@ class _LoginScreenState extends State<LoginScreen> {
             buildIcon(context),
             Expanded(
               child: Container(
-                width: double.infinity,
                 decoration: buildBoxDecoration(),
                 child: Padding(
                   padding: context.padding.medium,
@@ -38,19 +36,24 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        AppTextField(hintText: AppText.email, icon: Icons.email),
-                        AppTextField(hintText: AppText.password, icon: Icons.security),
-                        buildSizedBox(AppSizes.middle),
+                        const AppTextField(
+                            hintText: AppText.email, icon: Icons.email),
+                        const AppTextField(
+                            hintText: AppText.password,
+                            icon: Icons.security,
+                            isObscureText: true),
+                        const RememberMe(),
+                        AppSizedBox.small,
                         AppButton(
                           text: AppText.login,
-                          context: context,
                           onTap: () {
                             // todo
-                            Navigator.of(context).push(MaterialPageRoute(builder: (context) => HomeScreen()));
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => HomeScreen()));
                           },
                         ),
-                        buildSizedBox(AppSizes.middle),
-                        signInButton(context),
+                        AppSizedBox.middle,
+                        const SignInButton(),
                       ],
                     ),
                   ),
@@ -76,7 +79,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget buildIcon(BuildContext context) {
     return FittedBox(
       child: Container(
-        padding: EdgeInsets.all(AppEdgeInsets.small),
+        padding: context.padding.low,
         height: MediaQuery.of(context).size.height / 3,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(AppRadius.large),
@@ -84,27 +87,5 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
-  }
-
-  Widget signInButton(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        context.route.navigateToPage(RegisterPage());
-      },
-      child: Center(
-        child: Text(
-          AppText.orSignIn,
-          style: TextStyle(
-            color: AppColors.blueAccent,
-            fontSize: AppFontSize.small,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget buildSizedBox(double height) {
-    return SizedBox(height: height);
   }
 }

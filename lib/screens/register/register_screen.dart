@@ -19,22 +19,36 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        appBar: AppBar(backgroundColor: AppColors.primary),
+        appBar: AppBar(
+          backgroundColor: AppColors.primary,
+          title: const Text(AppText.signIn),
+          centerTitle: true,
+        ),
         body: SingleChildScrollView(
           child: Padding(
             padding: context.padding.low,
             child: Column(
               children: [
-                AppTextField(hintText: "Kullanıcı Adı", icon: Icons.ac_unit),
-                AppTextField(hintText: "Yaşanılan İl", icon: Icons.home),
-                AppTextField(hintText: "Yaşanılan İlçe", icon: Icons.home_repair_service),
-                AppTextField(hintText: "Email", icon: Icons.email),
-                AppTextField(hintText: "Şifre", icon: Icons.security),
-                AppTextField(hintText: "Şifre", icon: Icons.security),
+                const AppTextField(
+                    hintText: "Kullanıcı Adı", icon: Icons.ac_unit),
+                const AppTextField(hintText: "Yaşanılan İl", icon: Icons.home),
+                const AppTextField(
+                    hintText: "Yaşanılan İlçe",
+                    icon: Icons.home_repair_service),
+                const AppTextField(hintText: "Email", icon: Icons.email),
+                const AppTextField(
+                  hintText: "Şifre",
+                  icon: Icons.security,
+                  isObscureText: true,
+                ),
+                const AppTextField(
+                  hintText: "Şifre",
+                  icon: Icons.security,
+                  isObscureText: true,
+                ),
                 AppSizedBox.large,
                 AppButton(
                   text: AppText.signIn,
-                  context: context,
                   onTap: () {},
                 ),
               ],

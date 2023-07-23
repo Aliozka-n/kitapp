@@ -1,15 +1,19 @@
 class AppText {
-  static final email = "Email";
-  static final password = "Şifre";
-  static final login = "Giriş";
-  static final orSignIn = "Hesabım yok Kaydol";
-  static final signIn = "Kaydol";
-  static final appName = "KitApp";
+  static const appName = "KitApp";
+
+  // login
+  static const email = "Email";
+  static const password = "Şifre";
+  static const login = "Giriş";
+  static const orSignIn = "Hesabım yok Kaydol";
+  static const rememberMe = "Beni Hatırla";
+  // register
+  static const signIn = "Kayıt ol";
 
   // add_view
-  static final save = "Kaydet";
-  static final bookName = "Kitap Adı";
-  static final writerName = "Yazar Adı";
-  static final bookType = "Türü";
-  static final bookLanguage = "Dil";
+  static const save = "Kaydet";
+  static const bookName = "Kitap Adı";
+  static const writerName = "Yazar Adı";
+  static const bookType = "Türü";
+  static const bookLanguage = "Dil";
 }

@@ -4,7 +4,7 @@ import 'package:kitapp/base/models/message_model.dart';
 import '../../const/app_colors.dart';
 
 class Message extends StatelessWidget {
-  Message({super.key, this.messageModel});
+  const Message({super.key, this.messageModel});
 
   final MessageModel? messageModel;
 

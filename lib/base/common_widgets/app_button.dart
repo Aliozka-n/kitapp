@@ -8,22 +8,16 @@ class AppButton extends StatelessWidget {
   const AppButton({
     super.key,
     required this.text,
-    required this.context,
     this.buttonColor = AppColors.black,
-    this.textColor = AppColors.white,
+    this.textColor = AppColors.primary,
     required this.onTap,
   });
   final String text;
-  final BuildContext context;
   final Color buttonColor;
   final Color textColor;
   final void Function()? onTap;
   @override
   Widget build(BuildContext context) {
-    return loginButton(text: text);
-  }
-
-  Widget loginButton({required String text}) {
     return InkWell(
       onTap: onTap,
       child: Container(
@@ -36,15 +30,19 @@ class AppButton extends StatelessWidget {
             padding: context.padding.low,
             child: Text(
               text,
-              style: TextStyle(
-                color: textColor,
-                fontSize: AppFontSize.xlarge,
-                fontWeight: FontWeight.w500,
-              ),
+              style: textStyle(),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  TextStyle textStyle() {
+    return TextStyle(
+      color: textColor,
+      fontSize: AppFontSize.xlarge,
+      fontWeight: FontWeight.w500,
     );
   }
 }

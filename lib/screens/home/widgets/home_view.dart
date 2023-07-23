@@ -4,6 +4,7 @@ import 'package:kitapp/base/common_widgets/app_sizeed_box.dart';
 import 'package:kitapp/base/models/book_model.dart';
 import 'package:kitapp/const/app_colors.dart';
 import 'package:kitapp/const/app_text.dart';
+import 'package:kitapp/screens/book_detail/book_detail_screeen.dart';
 
 import '../../../base/common_widgets/book.dart';
 import '../../../const/app_radius.dart';
@@ -17,8 +18,11 @@ class HomeView extends StatelessWidget {
       padding: context.padding.low,
       child: SingleChildScrollView(
         child: Column(children: [
-          search(),
+          bookSearchField(),
           BookWidget(
+              onTap: () {
+                context.route.navigateToPage(BookDetailScreen());
+              },
               bookModel: BookModel(
                   id: "1",
                   lenguage: "tr",
@@ -31,14 +35,14 @@ class HomeView extends StatelessWidget {
     );
   }
 
-  Container search() {
+  Widget bookSearchField() {
     return Container(
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppRadius.small),
           color: Colors.black,
           shape: BoxShape.rectangle),
       child: TextField(
-        style: TextStyle(
+        style: const TextStyle(
           color: Colors.white,
         ),
         decoration: InputDecoration(
@@ -46,14 +50,14 @@ class HomeView extends StatelessWidget {
           suffixIcon: IconButton(
             onPressed: () {},
             color: AppColors.primary,
-            icon: Icon(Icons.search),
+            icon: const Icon(Icons.search),
           ),
-          prefixIcon: Icon(
+          prefixIcon: const Icon(
             Icons.ac_unit,
             color: AppColors.primary,
           ),
           hintText: AppText.bookName,
-          hintStyle: TextStyle(
+          hintStyle: const TextStyle(
             color: Colors.white,
           ),
         ),

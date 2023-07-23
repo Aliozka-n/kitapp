@@ -6,9 +6,14 @@ import '../../const/app_font_size.dart';
 import '../../const/app_radius.dart';
 
 class AppTextField extends StatelessWidget {
-  const AppTextField({super.key, required this.hintText, this.icon});
+  const AppTextField(
+      {super.key,
+      required this.hintText,
+      this.icon,
+      this.isObscureText = false});
   final String hintText;
   final IconData? icon;
+  final bool isObscureText;
   @override
   Widget build(BuildContext context) {
     return buildInput(context, hintText: hintText);
@@ -38,6 +43,8 @@ class AppTextField extends StatelessWidget {
               color: background,
             ),
             child: TextField(
+              textInputAction: TextInputAction.next,
+              obscureText: isObscureText,
               style: TextStyle(color: textColor),
               decoration: InputDecoration(
                 border: InputBorder.none,
