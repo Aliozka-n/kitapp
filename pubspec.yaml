@@ -19,7 +19,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: '>=2.19.6 <3.0.0'
+  sdk: '>=3.0.0 <4.0.0'
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -35,8 +35,30 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
-  kartal: ^3.0.1
+  kartal: ^4.2.0
   convex_bottom_bar: ^3.2.0
+  
+  # State Management
+  provider: ^6.1.1
+  
+  # Responsive Design
+  flutter_screenutil: ^5.9.0
+  
+  # Local Storage
+  shared_preferences: ^2.5.0
+  
+  # HTTP Client
+  http: ^1.2.2
+  
+  # Supabase
+  supabase_flutter: ^2.5.0
+  
+  # Image Picker
+  image_picker: ^1.0.7
+  
+  # UI/UX Enhancements
+  shimmer: ^3.0.0  # Loading effects
+  cached_network_image: ^3.3.0  # Image caching
 
 dev_dependencies:
   flutter_test:
@@ -46,8 +68,12 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^2.0.0
-  very_good_analysis: 4.0.0+1
+  flutter_lints: ^5.0.0
+  very_good_analysis: ^8.0.0
+
+dependency_overrides:
+  win32: 5.12.0
+  win32_registry: 2.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

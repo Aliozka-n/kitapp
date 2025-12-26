@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
+/// App Colors - Modern, fresh color palette (Legacy support)
 class AppColors {
-  static const primary = Colors.orangeAccent;
-  static const brown = Colors.brown;
+  // Primary Colors
+  static const primary = Color(0xFF6C5CE7);
+  static const brown = Color(0xFF8B4513);
   static const white = Colors.white;
-  static const grey = Colors.grey;
-  static const black = Colors.black;
-  static const blueAccent = Colors.blueAccent;
+  static const grey = Color(0xFF95A5A6);
+  static const black = Color(0xFF2D3436);
+  static const blueAccent = Color(0xFF0984E3);
 }

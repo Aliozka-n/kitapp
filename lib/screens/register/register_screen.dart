@@ -1,60 +1,47 @@
 import 'package:flutter/material.dart';
-import 'package:kartal/kartal.dart';
-import 'package:kitapp/base/common_widgets/app_sizeed_box.dart';
-import 'package:kitapp/base/common_widgets/app_text_field.dart';
-import 'package:kitapp/const/app_colors.dart';
+import '../../base/views/base_view.dart';
+import '../../common_widgets/alert_dialog_widget.dart';
+import 'register_service.dart';
+import 'viewmodels/register_view_model.dart';
+import 'views/register_view.dart';
 
-import '../../base/common_widgets/app_button.dart';
-import '../../const/app_text.dart';
-
-class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+/// Register Screen - StatefulWidget wrapper
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
+class _RegisterScreenState extends State<RegisterScreen> {
+  RegisterViewModel? _viewModel;
+
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: AppColors.primary,
-          title: const Text(AppText.signIn),
-          centerTitle: true,
-        ),
-        body: SingleChildScrollView(
-          child: Padding(
-            padding: context.padding.low,
-            child: Column(
-              children: [
-                const AppTextField(
-                    hintText: "Kullanıcı Adı", icon: Icons.ac_unit),
-                const AppTextField(hintText: "Yaşanılan İl", icon: Icons.home),
-                const AppTextField(
-                    hintText: "Yaşanılan İlçe",
-                    icon: Icons.home_repair_service),
-                const AppTextField(hintText: "Email", icon: Icons.email),
-                const AppTextField(
-                  hintText: "Şifre",
-                  icon: Icons.security,
-                  isObscureText: true,
-                ),
-                const AppTextField(
-                  hintText: "Şifre",
-                  icon: Icons.security,
-                  isObscureText: true,
-                ),
-                AppSizedBox.large,
-                AppButton(
-                  text: AppText.signIn,
-                  onTap: () {},
-                ),
-              ],
-            ),
-          ),
-        ),
+    return BaseView<RegisterViewModel>(
+      vmBuilder: (_) {
+        _viewModel = RegisterViewModel(service: RegisterService());
+        return _viewModel!;
+      },
+      builder: (context, viewModel) => PopScope(
+        canPop: viewModel.isFormEmpty,
+        onPopInvoked: (didPop) async {
+          if (didPop) return;
+          
+          if (!viewModel.isFormEmpty) {
+            final shouldPop = await AlertDialogWidget.showConfirmationDialog(
+              context,
+              'Sayfadan çıkmak istediğinize emin misiniz? Girilen bilgiler kaybolacak.',
+              confirmText: 'Çık',
+              cancelText: 'İptal',
+            );
+            
+            if (shouldPop && context.mounted) {
+              Navigator.pop(context);
+            }
+          }
+        },
+        child: RegisterView(viewModel: viewModel),
       ),
     );
   }

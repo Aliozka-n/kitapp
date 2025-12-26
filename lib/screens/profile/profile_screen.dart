@@ -1,50 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:kartal/kartal.dart';
-import 'package:kitapp/base/common_widgets/app_sizeed_box.dart';
-import 'package:kitapp/const/app_colors.dart';
+import '../../base/views/base_view.dart';
+import 'profile_service.dart';
+import 'viewmodels/profile_view_model.dart';
+import 'views/profile_view.dart';
 
-import '../../base/common_widgets/side_by_side_text_field.dart';
-
-class ProfileView extends StatelessWidget {
-  const ProfileView({super.key});
+/// Profile Screen - Modern kullanıcı profil ekranı
+class ProfileScreen extends StatelessWidget {
+  const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: context.padding.low,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            const CircleAvatar(
-              radius: 75,
-              backgroundImage: AssetImage('assets/icon.jpg'),
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.white,
-            ),
-            AppSizedBox.large,
-            SideBySideTextFields(
-              labelOne: "Kullanıcı Adı",
-              labelTwo: "Ali Özkan",
-              onPressed: () {},
-            ),
-            SideBySideTextFields(
-              labelOne: "E-mail",
-              labelTwo: "aliozkan@gmail.com",
-              onPressed: () {},
-            ),
-            SideBySideTextFields(
-              labelOne: "İl",
-              labelTwo: "Denizli",
-              onPressed: () {},
-            ),
-            SideBySideTextFields(
-              labelOne: "İlçe",
-              labelTwo: "Çivril",
-              onPressed: () {},
-            ),
-          ],
+    return Scaffold(
+      body: BaseView<ProfileViewModel>(
+        vmBuilder: (_) => ProfileViewModel(
+          service: ProfileService(),
         ),
+        builder: (context, viewModel) => ProfileView(viewModel: viewModel),
       ),
     );
   }
