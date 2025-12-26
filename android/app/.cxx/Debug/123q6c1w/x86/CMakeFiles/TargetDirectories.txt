@@ -1,0 +1,2 @@
+C:/kitapp/android/app/.cxx/Debug/123q6c1w/x86/CMakeFiles/edit_cache.dir
+C:/kitapp/android/app/.cxx/Debug/123q6c1w/x86/CMakeFiles/rebuild_cache.dir
