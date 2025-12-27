@@ -22,11 +22,8 @@ class ProfileService implements IProfileService {
       }
 
       // Supabase'den kullanıcı profilini getir
-      final response = await _supabase
-          .from('users')
-          .select()
-          .eq('id', userId)
-          .single();
+      final response =
+          await _supabase.from('users').select().eq('id', userId).single();
 
       final userResponse = dto.UserResponse.fromJson(
         Map<String, dynamic>.from(response),
@@ -45,7 +42,8 @@ class ProfileService implements IProfileService {
   }
 
   /// Profil güncelle
-  Future<ServiceResponse<dto.UserResponse>> updateProfile(dto.UserRequest request) async {
+  Future<ServiceResponse<dto.UserResponse>> updateProfile(
+      dto.UserRequest request) async {
     try {
       // Mevcut kullanıcının ID'sini al
       final userId = _supabase.auth.currentUser?.id;
@@ -63,9 +61,11 @@ class ProfileService implements IProfileService {
       if (request.email != null) updateData['email'] = request.email;
       if (request.il != null) updateData['il'] = request.il;
       if (request.ilce != null) updateData['ilce'] = request.ilce;
-      if (request.avatarUrl != null) updateData['avatar_url'] = request.avatarUrl;
+      if (request.avatarUrl != null)
+        updateData['avatar_url'] = request.avatarUrl;
       if (request.latitude != null) updateData['latitude'] = request.latitude;
-      if (request.longitude != null) updateData['longitude'] = request.longitude;
+      if (request.longitude != null)
+        updateData['longitude'] = request.longitude;
 
       // Supabase'de profil güncelle
       final response = await _supabase
@@ -215,7 +215,8 @@ class ProfileService implements IProfileService {
   }
 
   /// Kullanıcının şu anda paylaştığı kitapları getir
-  Future<ServiceResponse<List<Map<String, dynamic>>>> getCurrentlySharedBooks() async {
+  Future<ServiceResponse<List<Map<String, dynamic>>>>
+      getCurrentlySharedBooks() async {
     try {
       final userId = _supabase.auth.currentUser?.id;
       if (userId == null) {
@@ -249,5 +250,36 @@ class ProfileService implements IProfileService {
       );
     }
   }
-}
 
+  /// Kitap sil
+  @override
+  Future<ServiceResponse<bool>> deleteBook(String bookId) async {
+    try {
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) {
+        return ServiceResponse.error(
+          message: 'Kullanıcı giriş yapmamış',
+          statusCode: 401,
+        );
+      }
+
+      // Kitabı sil (Sadece kendi kitabını silebilir)
+      await _supabase
+          .from('books')
+          .delete()
+          .eq('id', bookId)
+          .eq('user_id', userId);
+
+      return ServiceResponse.success(
+        data: true,
+        message: 'Kitap başarıyla silindi',
+        statusCode: 200,
+      );
+    } catch (e) {
+      return ErrorHandler.createErrorResponse<bool>(
+        error: e,
+        statusCode: 500,
+      );
+    }
+  }
+}

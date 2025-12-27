@@ -1,32 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'app_size.dart';
 
-/// App Border Radius - Border radius sabitleri
+/// App Border Radius - Futuristic soft & rounded corners
 class AppBorderRadius {
   static BorderRadius circularXSmall() {
-    return BorderRadius.circular(AppSizes.sizeXSmall.w);
+    return BorderRadius.circular(8.r);
   }
 
   static BorderRadius circularSmall() {
-    return BorderRadius.circular(AppSizes.sizeSmall.w);
+    return BorderRadius.circular(12.r);
   }
 
   static BorderRadius circularMedium() {
-    return BorderRadius.circular(AppSizes.sizeMedium.w);
+    return BorderRadius.circular(20.r);
   }
 
   static BorderRadius circularLarge() {
-    return BorderRadius.circular(AppSizes.sizeLarge.w);
+    return BorderRadius.circular(28.r);
   }
 
   static BorderRadius circularXLarge() {
-    return BorderRadius.circular(AppSizes.sizeXLarge.w);
+    return BorderRadius.circular(40.r);
   }
 
-  // Eski metodlar (backward compatibility)
-  static const double small = 10.0;
+  // Legacy constants for backward compatibility
+  static const double small = 12.0;
   static const double middle = 20.0;
-  static const double large = 30.0;
+  static const double large = 32.0;
 }
+
 

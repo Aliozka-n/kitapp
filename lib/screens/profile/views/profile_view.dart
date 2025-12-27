@@ -5,7 +5,6 @@ import '../../../base/constants/app_constants.dart';
 import '../../../utils/navigation_util.dart';
 import '../viewmodels/profile_view_model.dart';
 import '../widgets/profile_header_widget.dart';
-import '../widgets/profile_stat_tile_widget.dart';
 import '../widgets/profile_action_tile_widget.dart';
 import '../widgets/profile_tab_switcher_widget.dart';
 import '../widgets/profile_book_card_widget.dart';
@@ -22,49 +21,74 @@ class ProfileView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
-      body: RefreshIndicator(
-        color: AppColors.primary,
-        onRefresh: viewModel.refresh,
-        child: CustomScrollView(
-          slivers: [
-            _buildAppBar(context),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24.w),
-                child: Column(
-                  children: [
-                    SizedBox(height: 20.h),
-                    ProfileHeaderWidget(user: viewModel.user),
-                    SizedBox(height: 32.h),
-                    _buildStatsGrid(),
-                    SizedBox(height: 40.h),
-                    ProfileTabSwitcherWidget(
-                      selectedIndex: viewModel.selectedTabIndex,
-                      onTabChanged: viewModel.setTabIndex,
+      backgroundColor: AppColors.backgroundCanvas,
+      body: Stack(
+        children: [
+          // Background Decorative Glow
+          Positioned(
+            top: -50.h,
+            left: -50.w,
+            child: Container(
+              width: 300.w,
+              height: 300.w,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.accent.withOpacity(0.1),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.accent.withOpacity(0.05),
+                    blurRadius: 100.r,
+                    spreadRadius: 50.r,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          RefreshIndicator(
+            color: AppColors.accentCyan,
+            backgroundColor: AppColors.primaryLight,
+            onRefresh: viewModel.refresh,
+            child: CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                _buildAppBar(context),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 24.w),
+                    child: Column(
+                      children: [
+                        SizedBox(height: 12.h),
+                        ProfileHeaderWidget(user: viewModel.user),
+                        SizedBox(height: 32.h),
+                        ProfileTabSwitcherWidget(
+                          selectedIndex: viewModel.selectedTabIndex,
+                          onTabChanged: viewModel.setTabIndex,
+                        ),
+                        SizedBox(height: 28.h),
+                      ],
                     ),
-                    SizedBox(height: 24.h),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-            _buildTabContent(context),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.all(24.w),
-                child: Column(
-                  children: [
-                    SizedBox(height: 24.h),
-                    _buildActionList(context),
-                    SizedBox(height: 48.h),
-                    _buildLogoutButton(context),
-                    SizedBox(height: 120.h),
-                  ],
+                _buildTabContent(context),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.all(24.w),
+                    child: Column(
+                      children: [
+                        SizedBox(height: 24.h),
+                        _buildActionList(context),
+                        SizedBox(height: 54.h),
+                        _buildLogoutButton(context),
+                        SizedBox(height: 140.h),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -73,52 +97,32 @@ class ProfileView extends StatelessWidget {
     return SliverAppBar(
       floating: true,
       pinned: true,
-      backgroundColor: AppColors.backgroundLight,
-      expandedHeight: 80.h,
-      centerTitle: false,
+      backgroundColor: AppColors.backgroundCanvas.withOpacity(0.8),
+      elevation: 0,
+      centerTitle: true,
       title: Text(
         "PROFİL",
-        style: GoogleFonts.syne(
+        style: GoogleFonts.outfit(
           color: AppColors.textPrimary,
-          fontSize: 24.sp,
-          fontWeight: FontWeight.w800,
-          letterSpacing: -0.5,
+          fontSize: 18.sp,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.5,
         ),
       ),
       actions: [
-        IconButton(
-          onPressed: () => NavigationUtil.navigateToEditProfile(context),
-          icon: const Icon(Icons.edit_note, size: 28),
-        ),
-        SizedBox(width: 16.w),
-      ],
-    );
-  }
-
-  Widget _buildStatsGrid() {
-    return Row(
-      children: [
-        Expanded(
-          child: ProfileStatTileWidget(
-            label: "KİTAPLAR",
-            value: viewModel.sharedBooksCount.toString(),
-            icon: Icons.auto_stories_outlined,
-          ),
-        ),
-        SizedBox(width: 16.w),
-        Expanded(
-          child: ProfileStatTileWidget(
-            label: "TAKASLAR",
-            value: "12",
-            icon: Icons.swap_horiz_outlined,
-          ),
-        ),
-        SizedBox(width: 16.w),
-        Expanded(
-          child: ProfileStatTileWidget(
-            label: "PUAN",
-            value: "4.8",
-            icon: Icons.star_outline,
+        Padding(
+          padding: EdgeInsets.only(right: 12.w),
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border:
+                  Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+            ),
+            child: IconButton(
+              onPressed: () => NavigationUtil.navigateToEditProfile(context),
+              icon: Icon(Icons.tune_rounded,
+                  color: AppColors.accentCyan, size: 20.sp),
+            ),
           ),
         ),
       ],
@@ -140,23 +144,37 @@ class ProfileView extends StatelessWidget {
       );
     }
 
+    // Calculate a safe aspect ratio to prevent overflows
+    final screenW = MediaQuery.sizeOf(context).width;
+    final pad = 24.w * 2;
+    final crossSpacing = 20.w;
+    const crossAxisCount = 2;
+    final tileW = (screenW - pad - crossSpacing) / crossAxisCount;
+    final coverH = tileW * 1.35;
+    final textH = 85.h;
+    final tileH = coverH + textH;
+    final dynamicRatio = tileW / tileH;
+
     return SliverPadding(
       padding: EdgeInsets.symmetric(horizontal: 24.w),
       sliver: SliverGrid(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: 20.h,
-          crossAxisSpacing: 16.w,
-          childAspectRatio: 0.65,
+          crossAxisCount: crossAxisCount,
+          mainAxisSpacing: 24.h,
+          crossAxisSpacing: 20.w,
+          childAspectRatio: dynamicRatio,
         ),
         delegate: SliverChildBuilderDelegate(
-          (context, index) => ProfileBookCardWidget(
-            book: books[index],
-            onTap: () => NavigationUtil.navigateToBookDetail(
-              context,
-              books[index].id ?? "",
-            ),
-          ),
+          (context, index) {
+            final book = books[index];
+            return ProfileBookCardWidget(
+              book: book,
+              onTap: () => NavigationUtil.navigateToBookDetail(
+                context,
+                book.id ?? "",
+              ),
+            );
+          },
           childCount: books.length,
         ),
       ),
@@ -164,29 +182,21 @@ class ProfileView extends StatelessWidget {
   }
 
   Widget _buildActionList(BuildContext context) {
-    return Column(
-      children: [
-        ProfileActionTileWidget(
-          title: "Kütüphanem",
-          icon: Icons.bookmark_outline,
-          onTap: () {},
-        ),
-        ProfileActionTileWidget(
-          title: "Favorilerim",
-          icon: Icons.favorite_outline,
-          onTap: () {},
-        ),
-        ProfileActionTileWidget(
-          title: "Ayarlar",
-          icon: Icons.settings_outlined,
-          onTap: () {},
-        ),
-        ProfileActionTileWidget(
-          title: "Yardım ve Destek",
-          icon: Icons.help_outline,
-          onTap: () {},
-        ),
-      ],
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.primaryLight,
+        borderRadius: BorderRadius.circular(24.r),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+      ),
+      child: Column(
+        children: [
+          ProfileActionTileWidget(
+            title: "Ayarlar",
+            icon: Icons.settings_outlined,
+            onTap: () => NavigationUtil.navigateToSettings(context),
+          ),
+        ],
+      ),
     );
   }
 
@@ -197,25 +207,27 @@ class ProfileView extends StatelessWidget {
         width: double.infinity,
         padding: EdgeInsets.symmetric(vertical: 20.h),
         decoration: BoxDecoration(
-          color: AppColors.backgroundWhite,
-          border: Border.all(color: AppColors.errorColor, width: 2),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.errorColor.withOpacity(0.1),
-              offset: Offset(4.w, 4.h),
-              blurRadius: 0,
-            ),
-          ],
+          borderRadius: BorderRadius.circular(24.r),
+          border: Border.all(
+              color: AppColors.errorColor.withOpacity(0.3), width: 1.5),
         ),
         child: Center(
-          child: Text(
-            "ÇIKIŞ YAP",
-            style: GoogleFonts.syne(
-              color: AppColors.errorColor,
-              fontWeight: FontWeight.w800,
-              fontSize: 14.sp,
-              letterSpacing: 1.5,
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.logout_rounded,
+                  color: AppColors.errorColor, size: 20.sp),
+              SizedBox(width: 12.w),
+              Text(
+                "ÇIKIŞ YAP",
+                style: GoogleFonts.outfit(
+                  color: AppColors.errorColor,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14.sp,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ],
           ),
         ),
       ),

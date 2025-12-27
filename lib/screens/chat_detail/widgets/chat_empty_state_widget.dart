@@ -8,27 +8,31 @@ class ChatEmptyStateWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: GlassPanel(
-        padding: EdgeInsets.all(32.w),
-        borderRadius: BorderRadius.circular(24.r),
-        boxShadow: ChatHudStyle.glowCyan,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.terminal_rounded, size: 42.sp, color: ChatHudStyle.cyan),
-            SizedBox(height: 24.h),
-            Text(
-              "NO_LOGS_FOUND",
-              style: ChatHudStyle.title(16.sp, color: ChatHudStyle.text),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: EdgeInsets.all(24.w),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: ChatHudStyle.cyan.withOpacity(0.1),
+              border: Border.all(color: ChatHudStyle.cyan.withOpacity(0.2)),
             ),
-            SizedBox(height: 8.h),
-            Text(
-              "Sohbeti başlatmak için bir şeyler yazın.",
-              style: ChatHudStyle.label(11.sp, color: ChatHudStyle.dim),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+            child: Icon(Icons.forum_outlined,
+                size: 42.sp, color: ChatHudStyle.cyan),
+          ),
+          SizedBox(height: 24.h),
+          Text(
+            "HENÜZ MESAJ YOK",
+            style: ChatHudStyle.title(16.sp),
+          ),
+          SizedBox(height: 12.h),
+          Text(
+            "Sohbeti başlatmak için bir şeyler yazın.",
+            style: ChatHudStyle.label(12.sp, color: ChatHudStyle.dim),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }

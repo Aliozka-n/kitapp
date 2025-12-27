@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_constants.dart';
 import '../constants/app_size.dart';
 
-/// Loading Widget - Distinctive Brutalist Loading Indicator
+/// Loading Widget - Ethereal Glowing Loader
 class LoadingWidget extends StatelessWidget {
   final double size;
   final String? message;
@@ -23,50 +23,16 @@ class LoadingWidget extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              // Shadow/Offset frame
-              Container(
-                width: size,
-                height: size,
-                decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.primary, width: 2),
-                ),
-              ),
-              // Spinning element
-              TweenAnimationBuilder<double>(
-                tween: Tween(begin: 0, end: 1),
-                duration: const Duration(seconds: 2),
-                curve: Curves.linear,
-                builder: (context, value, child) {
-                  return Transform.rotate(
-                    angle: value * 2 * 3.14159,
-                    child: Container(
-                      width: size * 0.6,
-                      height: size * 0.6,
-                      decoration: const BoxDecoration(
-                        color: AppColors.accent,
-                      ),
-                    ),
-                  );
-                },
-                onEnd:
-                    () {}, // Handled by repetition if we used a controller, but for simplicity:
-              ),
-              // Just use a simple spinning container for a distinctive feel
-              _SpinningSquare(size: size, color: color),
-            ],
-          ),
+          _FuturisticSpinner(size: size, color: color),
           if (message != null) ...[
             SizedBox(height: AppSizes.sizeLarge.h),
             Text(
-              message!.toUpperCase(),
-              style: GoogleFonts.syne(
+              message!,
+              style: GoogleFonts.outfit(
                 color: AppColors.textPrimary,
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 2,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.5,
               ),
             ),
           ],
@@ -76,17 +42,17 @@ class LoadingWidget extends StatelessWidget {
   }
 }
 
-class _SpinningSquare extends StatefulWidget {
+class _FuturisticSpinner extends StatefulWidget {
   final double size;
   final Color? color;
 
-  const _SpinningSquare({required this.size, this.color});
+  const _FuturisticSpinner({required this.size, this.color});
 
   @override
-  State<_SpinningSquare> createState() => _SpinningSquareState();
+  State<_FuturisticSpinner> createState() => _FuturisticSpinnerState();
 }
 
-class _SpinningSquareState extends State<_SpinningSquare>
+class _FuturisticSpinnerState extends State<_FuturisticSpinner>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
@@ -95,7 +61,7 @@ class _SpinningSquareState extends State<_SpinningSquare>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 1500),
     )..repeat();
   }
 
@@ -107,16 +73,102 @@ class _SpinningSquareState extends State<_SpinningSquare>
 
   @override
   Widget build(BuildContext context) {
-    return RotationTransition(
-      turns: _controller,
-      child: Container(
-        width: widget.size * 0.4,
-        height: widget.size * 0.4,
-        decoration: BoxDecoration(
-          color: widget.color ?? AppColors.accent,
-          border: Border.all(color: AppColors.primary, width: 1.5),
-        ),
+    return SizedBox(
+      width: widget.size,
+      height: widget.size,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              // Outer Glow
+              Container(
+                width: widget.size,
+                height: widget.size,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: (widget.color ?? AppColors.accent).withOpacity(0.2),
+                      blurRadius: 20.r,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+              ),
+              // Rotating Ring
+              RotationTransition(
+                turns: _controller,
+                child: CustomPaint(
+                  size: Size(widget.size, widget.size),
+                  painter: _SpinnerPainter(
+                    color: widget.color ?? AppColors.accent,
+                    secondaryColor: AppColors.accentCyan,
+                  ),
+                ),
+              ),
+              // Center Dot
+              Container(
+                width: widget.size * 0.15,
+                height: widget.size * 0.15,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: widget.color ?? AppColors.accentCyan,
+                  boxShadow: [
+                    BoxShadow(
+                      color: (widget.color ?? AppColors.accentCyan).withOpacity(0.6),
+                      blurRadius: 10.r,
+                    )
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 }
+
+class _SpinnerPainter extends CustomPainter {
+  final Color color;
+  final Color secondaryColor;
+
+  _SpinnerPainter({required this.color, required this.secondaryColor});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2;
+    final strokeWidth = 3.0;
+
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    // Gradient Sweep
+    final rect = Rect.fromCircle(center: center, radius: radius);
+    paint.shader = SweepGradient(
+      colors: [
+        color.withOpacity(0),
+        color.withOpacity(0.5),
+        secondaryColor,
+      ],
+      stops: const [0.0, 0.5, 1.0],
+    ).createShader(rect);
+
+    canvas.drawArc(
+      rect,
+      0,
+      4.7, // ~270 degrees
+      false,
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+

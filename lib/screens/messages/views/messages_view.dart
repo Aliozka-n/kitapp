@@ -15,22 +15,51 @@ class MessagesView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
-      appBar: AppBar(
-        title: const Text("MESAJLAR"),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppColors.backgroundCanvas,
+            AppColors.primary,
+          ],
+        ),
       ),
-      body: viewModel.messages.isEmpty
-          ? _buildEmptyState()
-          : ListView.separated(
-              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
-              itemCount: viewModel.messages.length,
-              separatorBuilder: (context, index) => SizedBox(height: 16.h),
-              itemBuilder: (context, index) {
-                final chat = viewModel.messages[index];
-                return _buildChatTile(context, chat);
-              },
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          title: Text(
+            "MESAJLAR",
+            style: GoogleFonts.outfit(
+              color: AppColors.textPrimary,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.5,
             ),
+          ),
+          centerTitle: true,
+        ),
+        body: viewModel.messages.isEmpty
+            ? _buildEmptyState()
+            : ListView.separated(
+                physics: const BouncingScrollPhysics(),
+                padding: EdgeInsets.only(
+                  left: 24.w,
+                  right: 24.w,
+                  top: 16.h,
+                  bottom: 140.h, // Space for futuristic bottom nav bar
+                ),
+                itemCount: viewModel.messages.length,
+                separatorBuilder: (context, index) => SizedBox(height: 16.h),
+                itemBuilder: (context, index) {
+                  final chat = viewModel.messages[index];
+                  return _buildChatTile(context, chat);
+                },
+              ),
+      ),
     );
   }
 
@@ -42,25 +71,27 @@ class MessagesView extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(32.w),
             decoration: BoxDecoration(
-              color: AppColors.secondaryLight,
-              border: Border.all(color: AppColors.primary, width: 2),
+              color: AppColors.primaryLight,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white.withOpacity(0.05), width: 1.5),
             ),
-            child: const Icon(Icons.chat_bubble_outline, size: 64, color: AppColors.primary),
+            child: Icon(Icons.chat_bubble_rounded, size: 64.sp, color: AppColors.accentCyan),
           ),
           SizedBox(height: 24.h),
           Text(
             "HENÜZ MESAJ YOK",
-            style: GoogleFonts.syne(
+            style: GoogleFonts.outfit(
               fontSize: 16.sp,
               fontWeight: FontWeight.w800,
               letterSpacing: 2,
+              color: AppColors.textPrimary,
             ),
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 12.h),
           Text(
             "Kitap takası için diğer okurlarla iletişime geç!",
             textAlign: TextAlign.center,
-            style: GoogleFonts.instrumentSans(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 14.sp,
               color: AppColors.textSecondary,
             ),
@@ -71,7 +102,6 @@ class MessagesView extends StatelessWidget {
   }
 
   Widget _buildChatTile(BuildContext context, dynamic chat) {
-    // `chat` burada MessageResponse (MessagesViewModel.messages) beklenir.
     final otherUserId = viewModel.otherUserIdOf(chat);
     final otherUserName = viewModel.otherUserNameOf(chat);
 
@@ -83,23 +113,26 @@ class MessagesView extends StatelessWidget {
           otherUserName,
         );
       },
+      borderRadius: BorderRadius.circular(20.r),
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: AppColors.backgroundWhite,
-          border: Border.all(color: AppColors.primary, width: 1.5),
-          boxShadow: AppShadows.sharp,
+          color: AppColors.primaryLight,
+          borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(color: Colors.white.withOpacity(0.05), width: 1.5),
+          boxShadow: AppShadows.card,
         ),
         child: Row(
           children: [
             Container(
-              width: 50.w,
-              height: 50.w,
+              width: 54.w,
+              height: 54.w,
               decoration: BoxDecoration(
-                color: AppColors.accent,
-                border: Border.all(color: AppColors.primary, width: 1.5),
+                gradient: AppGradients.cosmic,
+                shape: BoxShape.circle,
+                boxShadow: AppShadows.glow,
               ),
-              child: const Icon(Icons.person, color: AppColors.textWhite),
+              child: const Center(child: Icon(Icons.person_rounded, color: AppColors.textWhite)),
             ),
             SizedBox(width: 16.w),
             Expanded(
@@ -107,27 +140,28 @@ class MessagesView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    otherUserName.toUpperCase(),
-                    style: GoogleFonts.syne(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.primary,
+                    otherUserName,
+                    style: GoogleFonts.outfit(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
                     ),
                   ),
-                  SizedBox(height: 4.h),
+                  SizedBox(height: 6.h),
                   Text(
                     chat.lastMessage ?? "Mesaj içeriği...",
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.instrumentSans(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 13.sp,
                       color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios, size: 14, color: AppColors.primary),
+            Icon(Icons.chevron_right_rounded, size: 20.sp, color: AppColors.textMuted),
           ],
         ),
       ),

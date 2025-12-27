@@ -1,18 +1,26 @@
+import '../../domain/enums/book_category.dart';
+
 /// Home Screen Constants - Magic strings ve numbers'ları burada topla
 class HomeConstants {
   // Private constructor - Static sınıf
   HomeConstants._();
 
+  // Sabit filtreler
+  static const String all = 'Tümü';
+  static const String myBooks = 'Kitaplarım';
+  static const String myFavorites = 'Favorilerim';
+  static const String popular = 'Popüler';
+  static const String nearMe = 'Yakınımda';
+
   // Filter seçenekleri
-  static const List<String> filters = [
-    'Tümü',
-    'Kitaplarım',
-    'Favorilerim',
-    'Popüler',
-    'Yakınımda',
-    'Bilim Kurgu',
-    'Klasik',
-  ];
+  static List<String> get filters => [
+        all,
+        myBooks,
+        myFavorites,
+        popular,
+        nearMe,
+        ...BookCategory.names,
+      ];
 
   // Default filter
   static const String defaultFilter = 'Tümü';
@@ -36,4 +44,3 @@ class HomeConstants {
   static const int newlyListedLimit = 3;
   static const int recommendedLimit = 4;
 }
-

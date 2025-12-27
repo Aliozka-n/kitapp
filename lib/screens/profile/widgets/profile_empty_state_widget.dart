@@ -14,16 +14,17 @@ class ProfileEmptyStateWidget extends StatelessWidget {
       padding: EdgeInsets.all(32.w),
       margin: EdgeInsets.symmetric(horizontal: 24.w),
       decoration: BoxDecoration(
-        color: AppColors.backgroundWhite,
-        border: Border.all(color: AppColors.primary, width: 2),
+        color: AppColors.primaryLight,
+        borderRadius: BorderRadius.circular(24.r),
+        border: Border.all(color: Colors.white.withOpacity(0.05), width: 1.5),
       ),
       child: Column(
         children: [
-          Icon(Icons.inbox_outlined, size: 40.sp, color: AppColors.primary),
+          Icon(Icons.inbox_rounded, size: 40.sp, color: AppColors.accent),
           SizedBox(height: 16.h),
           Text(
             message,
-            style: GoogleFonts.instrumentSans(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 14.sp,
               color: AppColors.textSecondary,
               fontWeight: FontWeight.w500,
@@ -34,4 +35,5 @@ class ProfileEmptyStateWidget extends StatelessWidget {
       ),
     );
   }
+
 }

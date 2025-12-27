@@ -38,14 +38,14 @@ class ChatJumpToBottomWidget extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        Icons.arrow_downward,
-                        size: 18.sp,
+                        Icons.keyboard_double_arrow_down_rounded,
+                        size: 20.sp,
                         color: ChatHudStyle.cyan,
                       ),
                       SizedBox(width: 8.w),
                       Text(
-                        'ALT',
-                        style: ChatHudStyle.label(11.sp, color: ChatHudStyle.text),
+                        'EN ALTA İN',
+                        style: ChatHudStyle.label(10.sp, color: ChatHudStyle.text),
                       ),
                     ],
                   ),

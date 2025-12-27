@@ -21,4 +21,7 @@ abstract class IProfileService {
 
   /// Şu anda paylaşılan kitapları getir
   Future<ServiceResponse<List<Map<String, dynamic>>>> getCurrentlySharedBooks();
+
+  /// Kitap sil
+  Future<ServiceResponse<bool>> deleteBook(String bookId);
 }

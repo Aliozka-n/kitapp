@@ -15,7 +15,7 @@ extension BuildContextExtension on BuildContext {
 extension TextStyleExtension on BuildContext {
   TextStyle get textStyle => textTheme.bodySmall!.copyWith(
         fontSize: 14.sp,
-        color: AppColors.textDark,
+        color: AppColors.textPrimary,
       );
 
   TextStyle get hintTextStyle => textTheme.bodySmall!.copyWith(
@@ -25,8 +25,9 @@ extension TextStyleExtension on BuildContext {
 
   TextStyle get titleTextStyle => textTheme.titleLarge!.copyWith(
         fontSize: 18.sp,
-        color: AppColors.textDark,
+        color: AppColors.textPrimary,
         fontWeight: FontWeight.bold,
       );
 }
+
 

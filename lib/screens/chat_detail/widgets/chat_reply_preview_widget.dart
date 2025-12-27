@@ -27,9 +27,9 @@ class ChatReplyPreviewWidget extends StatelessWidget {
             width: 3.w,
             height: 40.h,
             decoration: BoxDecoration(
-              color: ChatHudStyle.acid.withOpacity(0.9),
+              color: ChatHudStyle.cyan.withOpacity(0.9),
               borderRadius: BorderRadius.circular(999),
-              boxShadow: ChatHudStyle.glowAcid,
+              boxShadow: ChatHudStyle.glowCyan,
             ),
           ),
           SizedBox(width: 10.w),
@@ -41,7 +41,7 @@ class ChatReplyPreviewWidget extends StatelessWidget {
                   title.toUpperCase(),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: ChatHudStyle.label(10.sp, color: ChatHudStyle.acid),
+                  style: ChatHudStyle.label(10.sp, color: ChatHudStyle.cyan),
                 ),
                 SizedBox(height: 6.h),
                 Text(

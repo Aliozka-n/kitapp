@@ -1,11 +1,15 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../../base/constants/app_constants.dart';
 import '../../../base/viewmodels/base_view_model.dart';
 import '../../../base/services/favorites_service.dart';
 import '../../../domain/dtos/book_dto.dart';
 import '../../../domain/dtos/user_dto.dart';
 import '../../../utils/shared_preferences_util.dart';
 import '../../../utils/navigation_util.dart';
+import '../../../utils/book_event_bus.dart';
 import '../profile_service.dart';
 
 /// Profile ViewModel - Profile ekranının durum ve iş kuralları
@@ -20,6 +24,7 @@ class ProfileViewModel extends BaseViewModel {
   List<BookResponse> _favoriteBooks = [];
   int _selectedTabIndex = 0; // 0: My Books, 1: Favorites
   final FavoritesService _favoritesService = FavoritesService();
+  StreamSubscription<BookEvent>? _bookEventSubscription;
 
   // PUBLIC GETTERS
   UserResponse? get user => _user;
@@ -30,7 +35,17 @@ class ProfileViewModel extends BaseViewModel {
   int get selectedTabIndex => _selectedTabIndex;
 
   // Constructor
-  ProfileViewModel({required this.service});
+  ProfileViewModel({required this.service}) {
+    _listenToBookEvents();
+  }
+
+  /// Kitap değişikliklerini dinle
+  void _listenToBookEvents() {
+    _bookEventSubscription = BookEventBus().events.listen((event) {
+      // Profil verilerini yenile
+      refresh();
+    });
+  }
 
   @override
   FutureOr<void> init() async {
@@ -161,6 +176,346 @@ class ProfileViewModel extends BaseViewModel {
       reloadState();
       return false;
     }
+  }
+
+  /// Kendi kitabını sil
+  Future<void> deleteBook(BuildContext context, String bookId) async {
+    isLoading = true;
+    try {
+      final response = await service.deleteBook(bookId);
+
+      if (response.isSuccessful) {
+        // Event fırlat
+        BookEventBus().fire(BookEvent(bookId: bookId, type: BookEventType.deleted));
+        // Profil verilerini yenile
+        await refresh();
+        // Başarı dialog'u göster
+        if (context.mounted) {
+          _showSuccessDialog(
+            context,
+            title: 'KİTAP SİLİNDİ',
+            message: 'Kitap başarıyla kütüphanenden kaldırıldı.',
+            icon: Icons.delete_sweep_rounded,
+          );
+        }
+      } else {
+        _handleError(context, response.message ?? 'Kitap silinemedi');
+      }
+    } catch (e) {
+      _handleError(context, 'Kitap silinirken bir hata oluştu');
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  /// Favoriden çıkar
+  Future<void> removeFavorite(BuildContext context, String bookId) async {
+    isLoading = true;
+    try {
+      final response = await _favoritesService.removeFavorite(bookId);
+
+      if (response.isSuccessful) {
+        // Event fırlat
+        BookEventBus().fire(BookEvent(bookId: bookId, type: BookEventType.favoriteRemoved));
+        // Profil verilerini yenile
+        await refresh();
+        // Başarı dialog'u göster
+        if (context.mounted) {
+          _showSuccessDialog(
+            context,
+            title: 'FAVORİDEN ÇIKARILDI',
+            message: 'Kitap favorilerinden kaldırıldı.',
+            icon: Icons.heart_broken_rounded,
+          );
+        }
+      } else {
+        _handleError(context, response.message ?? 'Favoriden çıkarılamadı');
+      }
+    } catch (e) {
+      _handleError(context, 'Favoriden çıkarılırken bir hata oluştu');
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  /// Başarılı işlem sonrası dialog - Ana sayfaya yönlendirme ile
+  void _showSuccessDialog(
+    BuildContext context, {
+    required String title,
+    required String message,
+    required IconData icon,
+  }) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.85),
+      builder: (dialogContext) => TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0.0, end: 1.0),
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeOutBack,
+        builder: (context, value, child) => Transform.scale(
+          scale: value,
+          child: Opacity(
+            opacity: value.clamp(0.0, 1.0),
+            child: AlertDialog(
+              backgroundColor: AppColors.primaryDark,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(32.r),
+                side: BorderSide(color: AppColors.successColor.withOpacity(0.3), width: 1.5),
+              ),
+              contentPadding: EdgeInsets.zero,
+              content: Container(
+                width: double.maxFinite,
+                padding: EdgeInsets.all(28.w),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(32.r),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.primaryDark,
+                      AppColors.primaryLight.withOpacity(0.5),
+                    ],
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Success Icon with Glow
+                    Container(
+                      width: 80.w,
+                      height: 80.w,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.successColor.withOpacity(0.2),
+                            AppColors.successColor.withOpacity(0.05),
+                          ],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.successColor.withOpacity(0.3),
+                            blurRadius: 30,
+                            spreadRadius: 5,
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        icon,
+                        color: AppColors.successColor,
+                        size: 40.sp,
+                      ),
+                    ),
+                    SizedBox(height: 28.h),
+                    // Title
+                    Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.outfit(
+                        color: AppColors.textPrimary,
+                        fontSize: 20.sp,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                    SizedBox(height: 12.h),
+                    // Message
+                    Text(
+                      message,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.plusJakartaSans(
+                        color: AppColors.textSecondary,
+                        fontSize: 14.sp,
+                        height: 1.5,
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
+                    // Info Text
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                      decoration: BoxDecoration(
+                        color: AppColors.accentCyan.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(color: AppColors.accentCyan.withOpacity(0.2)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline_rounded,
+                            color: AppColors.accentCyan,
+                            size: 18.sp,
+                          ),
+                          SizedBox(width: 10.w),
+                          Expanded(
+                            child: Text(
+                              'Değişikliklerin görünmesi için ana sayfayı yenileyebilirsin.',
+                              style: GoogleFonts.plusJakartaSans(
+                                color: AppColors.accentCyan,
+                                fontSize: 12.sp,
+                                height: 1.4,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 28.h),
+                    // Actions
+                    Row(
+                      children: [
+                        // Kapat butonu
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => Navigator.pop(dialogContext),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(vertical: 16.h),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16.r),
+                                border: Border.all(color: Colors.white.withOpacity(0.1)),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  'KAPAT',
+                                  style: GoogleFonts.outfit(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 13.sp,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 1.2,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 12.w),
+                        // Ana Sayfayı Yenile butonu
+                        Expanded(
+                          flex: 2,
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.pop(dialogContext);
+                              NavigationUtil.navigateToHome(context);
+                            },
+                            child: Container(
+                              padding: EdgeInsets.symmetric(vertical: 16.h),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16.r),
+                                gradient: LinearGradient(
+                                  colors: [
+                                    AppColors.successColor,
+                                    AppColors.successColor.withOpacity(0.8),
+                                  ],
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.successColor.withOpacity(0.4),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.refresh_rounded,
+                                    color: Colors.white,
+                                    size: 18.sp,
+                                  ),
+                                  SizedBox(width: 8.w),
+                                  Text(
+                                    'YENİLE',
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.white,
+                                      fontSize: 13.sp,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 1.2,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Hata yönetimi ve yönlendirme
+  void _handleError(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.primaryLight,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(28.r),
+          side: BorderSide(color: Colors.white.withOpacity(0.08)),
+        ),
+        title: Row(
+          children: [
+            Icon(Icons.error_outline_rounded, color: AppColors.errorColor, size: 28.sp),
+            SizedBox(width: 12.w),
+            Text(
+              'İŞLEM BAŞARISIZ',
+              style: GoogleFonts.outfit(
+                color: AppColors.textPrimary,
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1,
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          message,
+          style: GoogleFonts.plusJakartaSans(
+            color: AppColors.textSecondary,
+            fontSize: 15.sp,
+            height: 1.5,
+          ),
+        ),
+        actions: [
+          Padding(
+            padding: EdgeInsets.only(bottom: 12.h, right: 12.w),
+            child: TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: AppColors.accent.withOpacity(0.1),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+              ),
+              onPressed: () {
+                Navigator.pop(context); // Dialog'u kapat
+                NavigationUtil.navigateToHome(context); // Ana sayfaya yönlendir
+              },
+              child: Text(
+                'TAMAM',
+                style: GoogleFonts.outfit(
+                  color: AppColors.accentCyan,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _bookEventSubscription?.cancel();
+    super.dispose();
   }
 }
 

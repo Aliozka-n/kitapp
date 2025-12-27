@@ -22,7 +22,7 @@ class BookDetailView extends StatelessWidget {
     if (book == null) return const SizedBox.shrink();
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: AppColors.backgroundCanvas,
       body: CustomScrollView(
         slivers: [
           _buildSliverAppBar(context, book),
@@ -89,7 +89,7 @@ class BookDetailView extends StatelessWidget {
       ),
       actions: [
         IconButton(
-          onPressed: () => viewModel.toggleFavorite(),
+          onPressed: () => viewModel.toggleFavoriteWithContext(context),
           icon: Icon(
             viewModel.isFavorite ? Icons.favorite : Icons.favorite_border,
             color: viewModel.isFavorite ? AppColors.accent : AppColors.textWhite,
@@ -107,12 +107,13 @@ class BookDetailView extends StatelessWidget {
         Container(
           padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
           decoration: BoxDecoration(
-            color: AppColors.accent,
-            border: Border.all(color: AppColors.primary, width: 1.5),
+            gradient: AppGradients.cosmic,
+            borderRadius: BorderRadius.circular(10.r),
+            boxShadow: AppShadows.glow,
           ),
           child: Text(
             book.type?.toUpperCase() ?? "TÜR BELİRTİLMEMİŞ",
-            style: GoogleFonts.syne(
+            style: GoogleFonts.outfit(
               color: AppColors.textWhite,
               fontSize: 10.sp,
               fontWeight: FontWeight.w800,
@@ -120,20 +121,20 @@ class BookDetailView extends StatelessWidget {
             ),
           ),
         ),
-        SizedBox(height: 16.h),
+        SizedBox(height: 20.h),
         Text(
           book.name ?? "İsimsiz Kitap",
-          style: GoogleFonts.cormorantGaramond(
-            fontSize: 40.sp,
-            fontWeight: FontWeight.w700,
+          style: GoogleFonts.outfit(
+            fontSize: 36.sp,
+            fontWeight: FontWeight.w800,
             color: AppColors.textPrimary,
-            height: 1.0,
+            height: 1.1,
           ),
         ),
-        SizedBox(height: 8.h),
+        SizedBox(height: 12.h),
         Text(
           "Yazan: ${book.writer ?? 'Bilinmiyor'}",
-          style: GoogleFonts.syne(
+          style: GoogleFonts.plusJakartaSans(
             fontSize: 16.sp,
             fontWeight: FontWeight.w600,
             color: AppColors.textSecondary,
@@ -142,6 +143,7 @@ class BookDetailView extends StatelessWidget {
       ],
     );
   }
+
 
   Widget _buildSectionTitle(String title) {
     return Text(
@@ -170,9 +172,10 @@ class BookDetailView extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
-        color: AppColors.backgroundWhite,
-        border: Border.all(color: AppColors.primary, width: 1.5),
-        boxShadow: AppShadows.sharp,
+        color: AppColors.primaryLight,
+        borderRadius: BorderRadius.circular(24.r),
+        border: Border.all(color: Colors.white.withOpacity(0.05), width: 1.5),
+        boxShadow: AppShadows.card,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -192,24 +195,25 @@ class BookDetailView extends StatelessWidget {
       children: [
         Text(
           label,
-          style: GoogleFonts.syne(
+          style: GoogleFonts.outfit(
             fontSize: 10.sp,
             fontWeight: FontWeight.w800,
-            color: AppColors.textLight,
+            color: AppColors.textMuted,
           ),
         ),
-        SizedBox(height: 4.h),
+        SizedBox(height: 6.h),
         Text(
           value.toUpperCase(),
-          style: GoogleFonts.syne(
+          style: GoogleFonts.outfit(
             fontSize: 14.sp,
             fontWeight: FontWeight.w700,
-            color: AppColors.primary,
+            color: AppColors.accentCyan,
           ),
         ),
       ],
     );
   }
+
 
   Widget _buildVerticalDivider() {
     return Container(
@@ -223,19 +227,21 @@ class BookDetailView extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: AppColors.primary,
-        border: Border.all(color: AppColors.primary, width: 2),
+        color: AppColors.primaryLight,
+        borderRadius: BorderRadius.circular(24.r),
+        border: Border.all(color: Colors.white.withOpacity(0.05), width: 1.5),
       ),
       child: Row(
         children: [
           Container(
-            width: 50.w,
-            height: 50.w,
+            width: 54.w,
+            height: 54.w,
             decoration: BoxDecoration(
-              color: AppColors.accent,
-              border: Border.all(color: AppColors.textWhite, width: 2),
+              gradient: AppGradients.cosmic,
+              shape: BoxShape.circle,
+              boxShadow: AppShadows.glow,
             ),
-            child: const Icon(Icons.person, color: AppColors.textWhite),
+            child: const Center(child: Icon(Icons.person_rounded, color: AppColors.textWhite)),
           ),
           SizedBox(width: 16.w),
           Expanded(
@@ -244,19 +250,19 @@ class BookDetailView extends StatelessWidget {
               children: [
                 Text(
                   "KİTAP SAHİBİ",
-                  style: GoogleFonts.syne(
+                  style: GoogleFonts.outfit(
                     fontSize: 10.sp,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.accent,
+                    color: AppColors.accentCyan,
                     letterSpacing: 1,
                   ),
                 ),
                 Text(
                   viewModel.ownerName ?? "Kullanıcı",
-                  style: GoogleFonts.syne(
+                  style: GoogleFonts.outfit(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textWhite,
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ],
@@ -271,31 +277,30 @@ class BookDetailView extends StatelessWidget {
                   viewModel.ownerName ?? "Kullanıcı",
                 );
               },
-              icon: const Icon(Icons.chat_bubble_outline, color: AppColors.textWhite),
+              icon: Icon(Icons.chat_bubble_rounded, color: AppColors.accent, size: 24.sp),
             ),
         ],
       ),
     );
   }
 
+
   Widget _buildBottomActions(BuildContext context) {
     if (viewModel.isMyBook) {
       return Container(
         padding: EdgeInsets.all(24.w),
         decoration: BoxDecoration(
-          color: AppColors.backgroundWhite,
-          border: const Border(top: BorderSide(color: AppColors.primary, width: 2)),
+          color: AppColors.backgroundCanvas,
+          border: Border(top: BorderSide(color: Colors.white.withOpacity(0.05), width: 1.5)),
         ),
         child: ButtonWidget(
           text: "KİTABI SİL",
           backgroundColor: AppColors.errorColor,
           onPressed: () async {
             final confirmed = await _showDeleteConfirmation(context);
-            if (confirmed == true) {
-              final success = await viewModel.deleteBook();
-              if (success && context.mounted) {
-                NavigationUtil.pop(context);
-              }
+            if (confirmed == true && context.mounted) {
+              // ViewModel'e context gönder - Başarı/hata dialog'u gösterilecek
+              await viewModel.deleteBook(context);
             }
           },
         ),
@@ -305,8 +310,8 @@ class BookDetailView extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
-        color: AppColors.backgroundWhite,
-        border: const Border(top: BorderSide(color: AppColors.primary, width: 2)),
+        color: AppColors.backgroundCanvas,
+        border: Border(top: BorderSide(color: Colors.white.withOpacity(0.05), width: 1.5)),
       ),
       child: Row(
         children: [
@@ -321,16 +326,17 @@ class BookDetailView extends StatelessWidget {
             ),
           ),
           SizedBox(width: 16.w),
-          Container(
-            width: 56.h,
-            height: 56.h,
-            decoration: BoxDecoration(
-              color: AppColors.backgroundLight,
-              border: Border.all(color: AppColors.primary, width: 2),
-            ),
-            child: IconButton(
-              onPressed: () {}, // Share logic
-              icon: const Icon(Icons.share_outlined, color: AppColors.primary),
+          GestureDetector(
+            onTap: () {}, // Share logic
+            child: Container(
+              width: 60.h,
+              height: 60.h,
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight,
+                borderRadius: BorderRadius.circular(20.r),
+                border: Border.all(color: Colors.white.withOpacity(0.05), width: 1.5),
+              ),
+              child: const Icon(Icons.share_rounded, color: AppColors.accentCyan),
             ),
           ),
         ],
@@ -342,21 +348,25 @@ class BookDetailView extends StatelessWidget {
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.backgroundLight,
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero, side: BorderSide(color: AppColors.primary, width: 2)),
-        title: Text("EMİN MİSİN?", style: GoogleFonts.syne(fontWeight: FontWeight.w800)),
-        content: Text("Bu kitabı kütüphanenden kalıcı olarak silmek istediğine emin misin?", style: GoogleFonts.instrumentSans()),
+        backgroundColor: AppColors.primaryLight,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24.r),
+          side: BorderSide(color: Colors.white.withOpacity(0.1)),
+        ),
+        title: Text("EMİN MİSİN?", style: GoogleFonts.outfit(fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+        content: Text("Bu kitabı kütüphanenden kalıcı olarak silmek istediğine emin misin?", style: GoogleFonts.plusJakartaSans(color: AppColors.textSecondary)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text("İPTAL", style: GoogleFonts.syne(color: AppColors.textSecondary, fontWeight: FontWeight.w700)),
+            child: Text("İPTAL", style: GoogleFonts.outfit(color: AppColors.textSecondary, fontWeight: FontWeight.w700)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text("EVET, SİL", style: GoogleFonts.syne(color: AppColors.errorColor, fontWeight: FontWeight.w800)),
+            child: Text("EVET, SİL", style: GoogleFonts.outfit(color: AppColors.errorColor, fontWeight: FontWeight.w800)),
           ),
         ],
       ),
     );
   }
+
 }

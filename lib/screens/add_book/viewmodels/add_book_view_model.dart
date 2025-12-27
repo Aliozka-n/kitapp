@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import '../../../base/services/image_upload_service.dart';
 import '../../../base/viewmodels/base_view_model.dart';
 import '../../../domain/dtos/book_dto.dart';
+import '../../../domain/enums/book_category.dart';
+import '../../../utils/book_event_bus.dart';
 import '../add_book_service.dart';
 
 /// Add Book ViewModel - Add Book ekranının durum ve iş kuralları
@@ -13,14 +15,13 @@ class AddBookViewModel extends BaseViewModel {
   // PRIVATE FIELDS
   final TextEditingController nameController = TextEditingController();
   final TextEditingController writerController = TextEditingController();
-  final TextEditingController typeController = TextEditingController();
   final TextEditingController languageController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
   final formKey = GlobalKey<FormState>();
   final ImageUploadService _imageUploadService = ImageUploadService();
   String? _errorMessage;
   bool _isSuccess = false;
-  String? _selectedGenre;
+  BookCategory? _selectedCategory;
   String? _selectedLanguage;
   File? _selectedImage;
   String? _imageUrl;
@@ -28,7 +29,7 @@ class AddBookViewModel extends BaseViewModel {
   // PUBLIC GETTERS
   String? get errorMessage => _errorMessage;
   bool get isSuccess => _isSuccess;
-  String? get selectedGenre => _selectedGenre;
+  BookCategory? get selectedCategory => _selectedCategory;
   String? get selectedLanguage => _selectedLanguage;
   File? get selectedImage => _selectedImage;
   String? get imageUrl => _imageUrl;
@@ -38,16 +39,13 @@ class AddBookViewModel extends BaseViewModel {
     return nameController.text.trim().isEmpty &&
         writerController.text.trim().isEmpty &&
         descriptionController.text.trim().isEmpty &&
-        _selectedGenre == null &&
+        _selectedCategory == null &&
         _selectedLanguage == null &&
         _selectedImage == null;
   }
   
-  void setGenre(String? value) {
-    _selectedGenre = value;
-    if (value != null) {
-      typeController.text = value;
-    }
+  void setCategory(BookCategory? value) {
+    _selectedCategory = value;
     reloadState();
   }
   
@@ -104,19 +102,7 @@ class AddBookViewModel extends BaseViewModel {
   }
 
   // Genre and Language lists
-  List<String> get genres => [
-        'Fiction',
-        'Non-Fiction',
-        'Sci-Fi',
-        'Mystery',
-        'Romance',
-        'Thriller',
-        'Horror',
-        'Fantasy',
-        'Biography',
-        'History',
-        'Classic',
-      ];
+  List<BookCategory> get categories => BookCategory.values;
 
   List<String> get languages => [
         'English',
@@ -143,6 +129,12 @@ class AddBookViewModel extends BaseViewModel {
     if (!formKey.currentState!.validate()) {
       return false;
     }
+    
+    if (_selectedCategory == null) {
+      _errorMessage = 'Lütfen bir tür seçin';
+      reloadState();
+      return false;
+    }
 
     formKey.currentState!.save();
 
@@ -164,7 +156,7 @@ class AddBookViewModel extends BaseViewModel {
       final request = BookRequest(
         name: nameController.text.trim(),
         writer: writerController.text.trim(),
-        type: typeController.text.trim().isNotEmpty ? typeController.text.trim() : _selectedGenre,
+        type: _selectedCategory?.displayName,
         language: languageController.text.trim().isNotEmpty ? languageController.text.trim() : _selectedLanguage,
         description: descriptionController.text.trim().isNotEmpty ? descriptionController.text.trim() : null,
         imageUrl: _imageUrl, // Yüklenen görsel URL'i
@@ -174,6 +166,12 @@ class AddBookViewModel extends BaseViewModel {
 
       if (response.isSuccessful && response.data != null) {
         _isSuccess = true;
+        // Event fırlat
+        if (response.data!.id != null) {
+          BookEventBus().fire(
+            BookEvent(bookId: response.data!.id!, type: BookEventType.added),
+          );
+        }
         _clearForm();
         isLoading = false;
         reloadState();
@@ -196,10 +194,9 @@ class AddBookViewModel extends BaseViewModel {
   void _clearForm() {
     nameController.clear();
     writerController.clear();
-    typeController.clear();
     languageController.clear();
     descriptionController.clear();
-    _selectedGenre = null;
+    _selectedCategory = null;
     _selectedLanguage = null;
     _selectedImage = null;
     _imageUrl = null;
@@ -209,7 +206,6 @@ class AddBookViewModel extends BaseViewModel {
   void dispose() {
     nameController.dispose();
     writerController.dispose();
-    typeController.dispose();
     languageController.dispose();
     descriptionController.dispose();
     super.dispose();

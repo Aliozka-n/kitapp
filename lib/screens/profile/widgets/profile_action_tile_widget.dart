@@ -17,25 +17,27 @@ class ProfileActionTileWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 12.h),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundWhite,
-        border: Border.all(color: AppColors.primary, width: 1.5),
-      ),
-      child: ListTile(
-        onTap: onTap,
-        leading: Icon(icon, color: AppColors.primary, size: 24.sp),
-        title: Text(
-          title,
-          style: GoogleFonts.instrumentSans(
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
-          ),
+    return ListTile(
+      onTap: onTap,
+      contentPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
+      leading: Container(
+        padding: EdgeInsets.all(10.w),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.03),
+          borderRadius: BorderRadius.circular(12.r),
         ),
-        trailing: Icon(Icons.arrow_forward_ios, size: 14.sp, color: AppColors.textLight),
+        child: Icon(icon, color: AppColors.accent, size: 22.sp),
       ),
+      title: Text(
+        title,
+        style: GoogleFonts.plusJakartaSans(
+          fontSize: 15.sp,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
+        ),
+      ),
+      trailing: Icon(Icons.chevron_right_rounded, size: 20.sp, color: AppColors.textMuted),
     );
   }
 }
+

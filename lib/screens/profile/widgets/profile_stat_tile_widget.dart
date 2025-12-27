@@ -20,17 +20,25 @@ class ProfileStatTileWidget extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 20.h),
       decoration: BoxDecoration(
-        color: AppColors.backgroundWhite,
-        border: Border.all(color: AppColors.primary, width: 1.5),
+        color: AppColors.primaryLight,
+        borderRadius: BorderRadius.circular(24.r),
+        border: Border.all(color: Colors.white.withOpacity(0.05), width: 1),
       ),
       child: Column(
         children: [
-          Icon(icon, size: 20.sp, color: AppColors.accent),
-          SizedBox(height: 8.h),
+          Container(
+            padding: EdgeInsets.all(8.w),
+            decoration: BoxDecoration(
+              color: AppColors.accent.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 18.sp, color: AppColors.accentCyan),
+          ),
+          SizedBox(height: 12.h),
           Text(
             value,
-            style: GoogleFonts.syne(
-              fontSize: 18.sp,
+            style: GoogleFonts.outfit(
+              fontSize: 20.sp,
               fontWeight: FontWeight.w800,
               color: AppColors.textPrimary,
             ),
@@ -38,10 +46,10 @@ class ProfileStatTileWidget extends StatelessWidget {
           SizedBox(height: 4.h),
           Text(
             label,
-            style: GoogleFonts.syne(
-              fontSize: 10.sp,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1,
+            style: GoogleFonts.outfit(
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
               color: AppColors.textSecondary,
             ),
           ),
@@ -50,3 +58,4 @@ class ProfileStatTileWidget extends StatelessWidget {
     );
   }
 }
+

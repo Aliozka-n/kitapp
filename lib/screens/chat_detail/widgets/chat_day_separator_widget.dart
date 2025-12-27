@@ -18,9 +18,9 @@ class ChatDaySeparatorWidget extends StatelessWidget {
 
     String text;
     if (msgDate == today) {
-      text = "SECURE_SESSION_TODAY";
+      text = "BUGÜN";
     } else {
-      text = DateFormat('dd.MM.yyyy').format(date!);
+      text = DateFormat('dd MMMM yyyy', 'tr_TR').format(date!);
     }
 
     return Padding(
@@ -31,8 +31,8 @@ class ChatDaySeparatorWidget extends StatelessWidget {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.w),
             child: Text(
-              '// $text',
-              style: ChatHudStyle.label(9.sp, color: ChatHudStyle.dim),
+              text,
+              style: ChatHudStyle.label(9.sp, color: ChatHudStyle.cyan.withOpacity(0.5)),
             ),
           ),
           Expanded(child: _buildDottedLine()),
@@ -40,6 +40,7 @@ class ChatDaySeparatorWidget extends StatelessWidget {
       ),
     );
   }
+
 
   Widget _buildDottedLine() {
     return Container(

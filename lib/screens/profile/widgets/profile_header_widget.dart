@@ -18,39 +18,52 @@ class ProfileHeaderWidget extends StatelessWidget {
     return Column(
       children: [
         _buildAvatar(),
-        SizedBox(height: 24.h),
+        SizedBox(height: 28.h),
         Text(
-          name.toUpperCase(),
-          style: GoogleFonts.syne(
+          name,
+          style: GoogleFonts.outfit(
             fontSize: 28.sp,
             fontWeight: FontWeight.w800,
-            letterSpacing: -1,
+            letterSpacing: -0.5,
             color: AppColors.textPrimary,
           ),
           textAlign: TextAlign.center,
         ),
-        SizedBox(height: 8.h),
+        SizedBox(height: 12.h),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.location_on_outlined, size: 14.sp, color: AppColors.accent),
-            SizedBox(width: 4.w),
-            Text(
-              location,
-              style: GoogleFonts.instrumentSans(
-                fontSize: 13.sp,
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w500,
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight,
+                borderRadius: BorderRadius.circular(100.r),
+                border: Border.all(color: Colors.white.withOpacity(0.05)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.location_on_rounded, size: 14.sp, color: AppColors.accentCyan),
+                  SizedBox(width: 6.w),
+                  Text(
+                    location,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 13.sp,
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
         ),
-        SizedBox(height: 4.h),
+        SizedBox(height: 12.h),
         Text(
           email,
-          style: GoogleFonts.instrumentSans(
-            fontSize: 12.sp,
-            color: AppColors.textLight,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 13.sp,
+            color: AppColors.textMuted,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ],
@@ -59,21 +72,28 @@ class ProfileHeaderWidget extends StatelessWidget {
 
   Widget _buildAvatar() {
     return Container(
-      width: 100.w,
-      height: 100.w,
+      width: 110.w,
+      height: 110.w,
+      padding: EdgeInsets.all(4.w),
       decoration: BoxDecoration(
-        color: AppColors.primary,
-        border: Border.all(color: AppColors.primary, width: 2),
-        boxShadow: AppShadows.sharp,
+        shape: BoxShape.circle,
+        gradient: AppGradients.cosmic,
+        boxShadow: AppShadows.glow,
       ),
-      child: Center(
-        child: user?.avatarUrl != null
-            ? Image.network(
-                user!.avatarUrl!,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _buildInitials(),
-              )
-            : _buildInitials(),
+      child: Container(
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          color: AppColors.primary,
+        ),
+        child: ClipOval(
+          child: user?.avatarUrl != null && user!.avatarUrl!.isNotEmpty
+              ? Image.network(
+                  user!.avatarUrl!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => _buildInitials(),
+                )
+              : _buildInitials(),
+        ),
       ),
     );
   }
@@ -82,13 +102,16 @@ class ProfileHeaderWidget extends StatelessWidget {
     final initials = user?.name != null && user!.name!.isNotEmpty
         ? user!.name![0].toUpperCase()
         : "?";
-    return Text(
-      initials,
-      style: GoogleFonts.syne(
-        color: AppColors.textWhite,
-        fontSize: 40.sp,
-        fontWeight: FontWeight.w800,
+    return Center(
+      child: Text(
+        initials,
+        style: GoogleFonts.outfit(
+          color: AppColors.accentLight,
+          fontSize: 44.sp,
+          fontWeight: FontWeight.w800,
+        ),
       ),
     );
   }
 }
+

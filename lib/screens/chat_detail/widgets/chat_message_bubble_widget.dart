@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+import '../../../base/constants/app_constants.dart';
 import '../constants/chat_style_hud.dart';
 
 class ChatMessageBubbleWidget extends StatelessWidget {
@@ -37,21 +38,26 @@ class ChatMessageBubbleWidget extends StatelessWidget {
                   padding:
                       EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                   borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(16.r),
-                    topRight: Radius.circular(16.r),
-                    bottomLeft: Radius.circular(isMe ? 16.r : 2.r),
-                    bottomRight: Radius.circular(isMe ? 2.r : 16.r),
+                    topLeft: Radius.circular(20.r),
+                    topRight: Radius.circular(20.r),
+                    bottomLeft: Radius.circular(isMe ? 20.r : 4.r),
+                    bottomRight: Radius.circular(isMe ? 4.r : 20.r),
                   ),
-                  boxShadow: isMe ? ChatHudStyle.glowCyan : null,
+                  color: isMe 
+                      ? ChatHudStyle.indigo.withOpacity(0.15)
+                      : AppColors.glassBackground,
+                  boxShadow: isMe ? ChatHudStyle.glowIndigo : null,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         text,
-                        style:
-                            ChatHudStyle.body(14.sp, color: ChatHudStyle.text),
+                        style: ChatHudStyle.body(
+                          14.sp, 
+                          color: isMe ? Colors.white : ChatHudStyle.text,
+                        ),
                       ),
-                      SizedBox(height: 6.h),
+                      SizedBox(height: 8.h),
                       _buildMeta(),
                     ],
                   ),
@@ -67,12 +73,12 @@ class ChatMessageBubbleWidget extends StatelessWidget {
 
   Widget _buildDirectionLabel(String label) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 4.w),
+      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 12.h),
       child: RotatedBox(
         quarterTurns: 3,
         child: Text(
           label,
-          style: ChatHudStyle.label(8.sp, color: ChatHudStyle.dim),
+          style: ChatHudStyle.label(7.sp, color: ChatHudStyle.dim.withOpacity(0.5)),
         ),
       ),
     );
@@ -84,17 +90,18 @@ class ChatMessageBubbleWidget extends StatelessWidget {
       children: [
         Text(
           DateFormat('HH:mm').format(time),
-          style: ChatHudStyle.mono(9.sp, color: ChatHudStyle.dim),
+          style: ChatHudStyle.mono(9.sp, color: isMe ? Colors.white.withOpacity(0.5) : ChatHudStyle.dim),
         ),
         if (isMe) ...[
-          SizedBox(width: 6.w),
+          SizedBox(width: 8.w),
           Icon(
-            isPending ? Icons.access_time : Icons.done_all,
-            size: 12.sp,
-            color: isRead ? ChatHudStyle.cyan : ChatHudStyle.dim,
+            isPending ? Icons.access_time_rounded : Icons.done_all_rounded,
+            size: 13.sp,
+            color: isRead ? ChatHudStyle.cyan : Colors.white.withOpacity(0.3),
           ),
         ],
       ],
     );
   }
+
 }

@@ -6,6 +6,7 @@ import '../../../base/constants/home_constants.dart';
 import '../../../base/services/favorites_service.dart';
 import '../../../domain/dtos/book_dto.dart';
 import '../../../domain/models/book_model.dart';
+import '../../../utils/book_event_bus.dart';
 import '../home_service.dart';
 
 /// Home ViewModel - Home ekranının durum ve iş kuralları
@@ -19,16 +20,19 @@ class HomeViewModel extends BaseViewModel {
   String? _errorMessage;
   String _selectedFilter = HomeConstants.defaultFilter;
   final FavoritesService _favoritesService = FavoritesService();
+  StreamSubscription<BookEvent>? _bookEventSubscription;
 
   // ValueNotifier for granular updates
   final ValueNotifier<List<BookResponse>> filteredBooksNotifier =
       ValueNotifier<List<BookResponse>>([]);
 
   // PUBLIC GETTERS
-  List<BookResponse> get books =>
-      _filteredBooks.isEmpty ? _books : _filteredBooks;
+  List<BookResponse> get books => _filteredBooks;
   String? get errorMessage => _errorMessage;
   String get selectedFilter => _selectedFilter;
+
+  /// Arama aktif mi? (Arama barına yazı yazıldığında true)
+  bool get isSearchActive => searchController.text.trim().isNotEmpty;
 
   // Get newly listed books (last N)
   List<BookResponse> get newlyListedBooks {
@@ -50,6 +54,32 @@ class HomeViewModel extends BaseViewModel {
   // Constructor
   HomeViewModel({required this.service}) {
     searchController.addListener(_onSearchChanged);
+    _listenToBookEvents();
+  }
+
+  /// Kitap değişikliklerini dinle
+  void _listenToBookEvents() {
+    _bookEventSubscription = BookEventBus().events.listen((event) async {
+      if (event.type == BookEventType.deleted) {
+        // Kitap silindiğinde listeden çıkar (Immediate UI feedback)
+        _books = _books.where((b) => b.id != event.bookId).toList();
+        _filteredBooks =
+            _filteredBooks.where((b) => b.id != event.bookId).toList();
+        filteredBooksNotifier.value = List.from(_filteredBooks);
+
+        // Force UI update
+        notifyListeners();
+
+        // Arka planda listeyi yenile (Source of truth sync)
+        await loadBooks(isSilent: true);
+      } else if (event.type == BookEventType.added ||
+          event.type == BookEventType.updated ||
+          event.type == BookEventType.favoriteRemoved ||
+          event.type == BookEventType.favoriteAdded) {
+        // Diğer değişikliklerde listeyi sessizce yenile
+        await loadBooks(isSilent: true);
+      }
+    });
   }
 
   @override
@@ -58,19 +88,17 @@ class HomeViewModel extends BaseViewModel {
   }
 
   /// Books yükle
-  Future<void> loadBooks() async {
-    isLoading = true;
+  Future<void> loadBooks({bool isSilent = false}) async {
+    if (!isSilent) isLoading = true;
     _errorMessage = null;
 
     try {
       final response = await service.getBooks();
 
       if (response.isSuccessful && response.data != null) {
-        _books = response.data!;
-        await _applyFilter();
+        _books = response.data ?? [];
+        await _onSearchChanged(); // Arama ve filtreyi birlikte uygula
         _errorMessage = null;
-        filteredBooksNotifier.value = _filteredBooks;
-        reloadState();
       } else {
         _errorMessage = response.message ?? 'Kitaplar yüklenemedi';
         reloadState();
@@ -79,14 +107,14 @@ class HomeViewModel extends BaseViewModel {
       _errorMessage = 'Kitaplar yüklenirken hata oluştu';
       reloadState();
     } finally {
-      isLoading = false;
+      if (!isSilent) isLoading = false;
     }
   }
 
   /// Book ara
   Future<void> searchBooks(String query) async {
     if (query.isEmpty) {
-      _filteredBooks = _books;
+      _filteredBooks = List<BookResponse>.from(_books);
       reloadState();
       return;
     }
@@ -98,7 +126,7 @@ class HomeViewModel extends BaseViewModel {
       final response = await service.searchBooks(query);
 
       if (response.isSuccessful && response.data != null) {
-        _filteredBooks = response.data!;
+        _filteredBooks = response.data ?? [];
         _errorMessage = null;
         filteredBooksNotifier.value = _filteredBooks;
         reloadState();
@@ -117,18 +145,16 @@ class HomeViewModel extends BaseViewModel {
   /// Filter değiştir
   Future<void> setFilter(String filter) async {
     _selectedFilter = filter;
-    await _applyFilter();
-    filteredBooksNotifier.value = _filteredBooks;
-    reloadState();
+    await _onSearchChanged(); // Arama ve filtreyi birlikte uygula
   }
 
   /// Filter uygula
   Future<void> _applyFilter() async {
     try {
-      if (_selectedFilter == HomeConstants.filters[0]) {
-        // Tümü - Tüm kitaplar
-        _filteredBooks = _books;
-      } else if (_selectedFilter == HomeConstants.filters[1]) {
+      if (_selectedFilter == HomeConstants.all) {
+        // Tümü - Tüm kitaplar (YENİ LİSTE OLUŞTUR - referans değil!)
+        _filteredBooks = List<BookResponse>.from(_books);
+      } else if (_selectedFilter == HomeConstants.myBooks) {
         // Kitaplarım - Sadece kullanıcının kitapları
         final currentUserId = await _getCurrentUserId();
         if (currentUserId != null) {
@@ -138,7 +164,7 @@ class HomeViewModel extends BaseViewModel {
         } else {
           _filteredBooks = [];
         }
-      } else if (_selectedFilter == HomeConstants.filters[2]) {
+      } else if (_selectedFilter == HomeConstants.myFavorites) {
         // Favorilerim - Favori kitaplar
         try {
           final response = await _favoritesService.getFavorites();
@@ -153,7 +179,7 @@ class HomeViewModel extends BaseViewModel {
         } catch (e) {
           _filteredBooks = [];
         }
-      } else if (_selectedFilter == HomeConstants.filters[3]) {
+      } else if (_selectedFilter == HomeConstants.popular) {
         // Popüler - Tüm kitaplar (en yeni önce)
         _filteredBooks = List.from(_books);
         _filteredBooks.sort((a, b) {
@@ -161,11 +187,11 @@ class HomeViewModel extends BaseViewModel {
           final bDate = b.createdAt ?? DateTime(1970);
           return bDate.compareTo(aDate);
         });
-      } else if (_selectedFilter == HomeConstants.filters[4]) {
+      } else if (_selectedFilter == HomeConstants.nearMe) {
         // Yakınımda - TODO: Implement location-based filtering
-        _filteredBooks = _books;
+        _filteredBooks = List<BookResponse>.from(_books);
       } else {
-        // Filter by type/genre
+        // Filter by type/genre (BookCategory)
         _filteredBooks = _books.where((book) {
           return book.type?.toLowerCase() == _selectedFilter.toLowerCase();
         }).toList();
@@ -188,27 +214,22 @@ class HomeViewModel extends BaseViewModel {
   /// Search değiştiğinde
   Future<void> _onSearchChanged() async {
     final query = searchController.text;
-    if (query.isEmpty) {
-      await _applyFilter();
-      filteredBooksNotifier.value = _filteredBooks;
-      reloadState();
-    } else {
-      // Local filtreleme - mevcut filtreyi koru
-      final baseList = _selectedFilter == HomeConstants.filters[0] 
-          ? _books 
-          : _filteredBooks;
-      _filteredBooks = baseList.where((book) {
+    await _applyFilter(); // Her aramada önce filtreyi uygula
+
+    if (query.isNotEmpty) {
+      final searchLower = query.toLowerCase();
+      _filteredBooks = _filteredBooks.where((book) {
         final name = book.name?.toLowerCase() ?? '';
         final writer = book.writer?.toLowerCase() ?? '';
         final type = book.type?.toLowerCase() ?? '';
-        final searchLower = query.toLowerCase();
         return name.contains(searchLower) ||
             writer.contains(searchLower) ||
             type.contains(searchLower);
       }).toList();
-      filteredBooksNotifier.value = _filteredBooks;
-      reloadState();
     }
+
+    filteredBooksNotifier.value = _filteredBooks;
+    reloadState();
   }
 
   /// BookResponse'u BookModel'e çevir (mevcut widget'lar için)
@@ -227,6 +248,7 @@ class HomeViewModel extends BaseViewModel {
     searchController.removeListener(_onSearchChanged);
     searchController.dispose();
     filteredBooksNotifier.dispose();
+    _bookEventSubscription?.cancel();
     super.dispose();
   }
 }

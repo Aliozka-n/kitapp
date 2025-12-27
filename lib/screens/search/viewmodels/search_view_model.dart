@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../base/viewmodels/base_view_model.dart';
 import '../../../domain/dtos/book_dto.dart';
+import '../../../utils/book_event_bus.dart';
 import '../search_service.dart';
 
 /// Search ViewModel - Arama ekranının durum ve iş kuralları
@@ -15,6 +16,7 @@ class SearchViewModel extends BaseViewModel {
   String? _selectedType;
   String? _selectedLanguage;
   Timer? _debounceTimer;
+  StreamSubscription<BookEvent>? _bookEventSubscription;
 
   // PUBLIC GETTERS
   List<BookResponse> get searchResults => _searchResults;
@@ -26,6 +28,25 @@ class SearchViewModel extends BaseViewModel {
   // Constructor
   SearchViewModel({required this.service}) {
     searchController.addListener(_onSearchChanged);
+    _listenToBookEvents();
+  }
+
+  /// Kitap değişikliklerini dinle
+  void _listenToBookEvents() {
+    _bookEventSubscription = BookEventBus().events.listen((event) {
+      if (event.type == BookEventType.deleted) {
+        _searchResults.removeWhere((b) => b.id == event.bookId);
+        reloadState();
+      } else {
+        // Arama sorgusu varsa aramayı yenile
+        final query = searchController.text.trim();
+        if (query.isNotEmpty ||
+            _selectedType != null ||
+            _selectedLanguage != null) {
+          _executeSearch(query, isSilent: true);
+        }
+      }
+    });
   }
 
   @override
@@ -51,8 +72,8 @@ class SearchViewModel extends BaseViewModel {
   }
 
   /// Arama işlemini gerçekleştir
-  Future<void> _executeSearch(String query) async {
-    isLoading = true;
+  Future<void> _executeSearch(String query, {bool isSilent = false}) async {
+    if (!isSilent) isLoading = true;
     _errorMessage = null;
 
     try {
@@ -76,7 +97,7 @@ class SearchViewModel extends BaseViewModel {
       _searchResults = [];
       reloadState();
     } finally {
-      isLoading = false;
+      if (!isSilent) isLoading = false;
     }
   }
 
@@ -135,7 +156,7 @@ class SearchViewModel extends BaseViewModel {
     _debounceTimer?.cancel();
     searchController.removeListener(_onSearchChanged);
     searchController.dispose();
+    _bookEventSubscription?.cancel();
     super.dispose();
   }
 }
-

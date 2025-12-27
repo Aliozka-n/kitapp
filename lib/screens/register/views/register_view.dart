@@ -19,32 +19,35 @@ class RegisterView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: AppColors.backgroundCanvas,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 24.w),
+          padding: EdgeInsets.symmetric(horizontal: 28.w),
           child: Form(
             key: viewModel.formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 40.h),
+                SizedBox(height: 20.h),
                 IconButton(
                   onPressed: () => NavigationUtil.pop(context),
-                  icon: const Icon(Icons.arrow_back_ios_new, size: 24),
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 24),
                   padding: EdgeInsets.zero,
                   alignment: Alignment.centerLeft,
                 ),
                 SizedBox(height: 24.h),
                 Text(
                   "Yeni Bir Başlangıç.",
-                  style: Theme.of(context).textTheme.displayLarge,
+                  style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                    fontSize: 36.sp,
+                  ),
                 ),
-                SizedBox(height: 8.h),
+                SizedBox(height: 12.h),
                 Text(
                   "Kendi kütüphaneni oluşturmaya başla.",
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w500,
                       ),
                 ),
                 SizedBox(height: 40.h),
@@ -102,21 +105,29 @@ class RegisterView extends StatelessWidget {
                     children: [
                       Text(
                         "Zaten bir hesabın var mı?",
-                        style: GoogleFonts.instrumentSans(
+                        style: GoogleFonts.plusJakartaSans(
                           color: AppColors.textSecondary,
                           fontSize: 14.sp,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                      SizedBox(height: 4.h),
+                      SizedBox(height: 12.h),
                       GestureDetector(
                         onTap: () => NavigationUtil.pop(context),
-                        child: Text(
-                          "GİRİŞ YAP",
-                          style: GoogleFonts.syne(
-                            color: AppColors.accent,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 14.sp,
-                            decoration: TextDecoration.underline,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(100.r),
+                            border: Border.all(color: AppColors.accent.withOpacity(0.3)),
+                          ),
+                          child: Text(
+                            "GİRİŞ YAP",
+                            style: GoogleFonts.outfit(
+                              color: AppColors.accentLight,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13.sp,
+                              letterSpacing: 1.5,
+                            ),
                           ),
                         ),
                       ),

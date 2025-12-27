@@ -17,10 +17,10 @@ class ChatErrorBannerWidget extends StatelessWidget {
     return GlassPanel(
       padding: EdgeInsets.all(16.w),
       borderRadius: BorderRadius.circular(12.r),
-      boxShadow: ChatHudStyle.glowPink,
+      boxShadow: ChatHudStyle.glowIndigo,
       child: Row(
         children: [
-          Icon(Icons.warning_amber_rounded, color: ChatHudStyle.pink, size: 24.sp),
+          Icon(Icons.warning_amber_rounded, color: ChatHudStyle.accent, size: 24.sp),
           SizedBox(width: 12.w),
           Expanded(
             child: Column(
@@ -28,7 +28,7 @@ class ChatErrorBannerWidget extends StatelessWidget {
               children: [
                 Text(
                   'SYSTEM_ERROR',
-                  style: ChatHudStyle.label(10.sp, color: ChatHudStyle.pink),
+                  style: ChatHudStyle.label(10.sp, color: ChatHudStyle.accent),
                 ),
                 Text(
                   message,

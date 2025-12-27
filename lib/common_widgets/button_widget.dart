@@ -10,6 +10,7 @@ class ButtonWidget extends StatelessWidget {
   final Color? backgroundColor;
   final Color? textColor;
   final bool isSecondary;
+  final IconData? icon;
 
   const ButtonWidget({
     super.key,
@@ -19,80 +20,97 @@ class ButtonWidget extends StatelessWidget {
     this.backgroundColor,
     this.textColor,
     this.isSecondary = false,
+    this.icon,
   });
 
   @override
   Widget build(BuildContext context) {
-    final effectiveBackgroundColor = isSecondary 
-        ? AppColors.backgroundLight 
-        : (backgroundColor ?? AppColors.primary);
+    final effectiveBackgroundColor = backgroundColor ?? 
+        (isSecondary ? AppColors.primaryLight : AppColors.accent);
     
-    final effectiveTextColor = isSecondary 
-        ? AppColors.primary 
-        : (textColor ?? AppColors.textWhite);
+    final effectiveTextColor = textColor ?? AppColors.textWhite;
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: isLoading ? null : onPressed,
-        child: IntrinsicHeight(
-          child: Stack(
-            children: [
-              // Brutalist shadow offset
-              if (onPressed != null && !isLoading)
-                Positioned(
-                  top: 4.h,
-                  left: 4.w,
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.accent,
-                      border: Border.all(color: AppColors.primary, width: 2),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          height: 60.h,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            gradient: isSecondary ? null : AppGradients.cosmic,
+            color: isSecondary ? effectiveBackgroundColor : null,
+            borderRadius: BorderRadius.circular(20.r),
+            boxShadow: isSecondary ? [] : AppShadows.glow,
+            border: Border.all(
+              color: isSecondary 
+                  ? Colors.white.withOpacity(0.1) 
+                  : Colors.white.withOpacity(0.2),
+              width: 1,
+            ),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20.r),
+            child: Stack(
+              children: [
+                // Subtle shimmer/glow effect
+                if (!isSecondary)
+                  Positioned(
+                    top: -20,
+                    left: -20,
+                    child: Container(
+                      width: 100.w,
+                      height: 100.h,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.white.withOpacity(0.2),
+                            blurRadius: 40.r,
+                          )
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              // Main button body
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 100),
-                margin: EdgeInsets.only(
-                  bottom: (onPressed != null && !isLoading) ? 4.h : 0,
-                  right: (onPressed != null && !isLoading) ? 4.w : 0,
-                ),
-                height: 56.h,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: effectiveBackgroundColor,
-                  border: Border.all(
-                    color: AppColors.primary, 
-                    width: 2,
-                  ),
-                ),
-                alignment: Alignment.center,
-                child: isLoading
-                    ? SizedBox(
-                        height: 24.h,
-                        width: 24.h,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(effectiveTextColor),
+                
+                Center(
+                  child: isLoading
+                      ? SizedBox(
+                          height: 24.h,
+                          width: 24.h,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            valueColor: AlwaysStoppedAnimation<Color>(effectiveTextColor),
+                          ),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (icon != null) ...[
+                              Icon(icon, color: effectiveTextColor, size: 20.sp),
+                              SizedBox(width: 10.w),
+                            ],
+                            Text(
+                              text,
+                              style: GoogleFonts.outfit(
+                                color: effectiveTextColor,
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
                         ),
-                      )
-                    : Text(
-                        text.toUpperCase(),
-                        style: GoogleFonts.syne(
-                          color: effectiveTextColor,
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.5,
-                        ),
-                      ),
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 }
+
 

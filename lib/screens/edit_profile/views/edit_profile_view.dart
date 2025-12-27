@@ -18,22 +18,23 @@ class EditProfileView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: AppColors.backgroundCanvas,
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundLight,
+        backgroundColor: AppColors.backgroundCanvas,
         elevation: 0,
-        centerTitle: false,
+        centerTitle: true,
         title: Text(
           "PROFİLİ DÜZENLE",
-          style: GoogleFonts.syne(
+          style: GoogleFonts.outfit(
             color: AppColors.textPrimary,
-            fontSize: 20.sp,
-            fontWeight: FontWeight.w800,
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1,
           ),
         ),
         leading: IconButton(
           onPressed: () => _handleBack(context),
-          icon: const Icon(Icons.close, color: AppColors.textPrimary),
+          icon: const Icon(Icons.close_rounded, color: AppColors.textPrimary),
         ),
       ),
       body: SingleChildScrollView(
@@ -63,26 +64,35 @@ class EditProfileView extends StatelessWidget {
           Container(
             width: 120.w,
             height: 120.w,
+            padding: EdgeInsets.all(4.w),
             decoration: BoxDecoration(
-              color: AppColors.primary,
-              border: Border.all(color: AppColors.primary, width: 2),
-              boxShadow: AppShadows.sharp,
+              shape: BoxShape.circle,
+              gradient: AppGradients.cosmic,
+              boxShadow: AppShadows.glow,
             ),
-            child: _buildAvatarContent(),
+            child: Container(
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.primary,
+              ),
+              child: ClipOval(child: _buildAvatarContent()),
+            ),
           ),
           Positioned(
-            right: -8.w,
-            bottom: -8.h,
+            right: 0,
+            bottom: 0,
             child: GestureDetector(
               onTap: () => _showImageSourceActionSheet(context),
               child: Container(
                 padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
                   color: AppColors.accent,
-                  border: Border.all(color: AppColors.primary, width: 1.5),
-                  shape: BoxShape.rectangle,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                      color: Colors.white.withOpacity(0.2), width: 1.5),
+                  boxShadow: AppShadows.glow,
                 ),
-                child: const Icon(Icons.camera_alt,
+                child: const Icon(Icons.camera_alt_rounded,
                     color: AppColors.textWhite, size: 20),
               ),
             ),
@@ -125,7 +135,6 @@ class EditProfileView extends StatelessWidget {
           label: "E-POSTA",
           hintText: "E-posta adresinizi girin",
           controller: viewModel.emailController,
-          readOnly: true,
         ),
         SizedBox(height: 24.h),
         Row(
@@ -154,20 +163,23 @@ class EditProfileView extends StatelessWidget {
   Widget _buildSaveButton(BuildContext context) {
     return GestureDetector(
       onTap: viewModel.isLoading ? null : () => _handleSave(context),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
         width: double.infinity,
         padding: EdgeInsets.symmetric(vertical: 20.h),
         decoration: BoxDecoration(
-          color: viewModel.isFormChanged ? AppColors.primary : AppColors.grey,
-          border: Border.all(color: AppColors.primary, width: 2),
-          boxShadow: viewModel.isFormChanged ? AppShadows.sharp : null,
+          gradient: viewModel.isFormChanged ? AppGradients.cosmic : null,
+          color: viewModel.isFormChanged ? null : AppColors.grey,
+          borderRadius: BorderRadius.circular(20.r),
+          boxShadow: viewModel.isFormChanged ? AppShadows.glow : null,
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
         ),
         child: Center(
           child: viewModel.isLoading
               ? SizedBox(
                   width: 20.w,
                   height: 20.w,
-                  child: CircularProgressIndicator(
+                  child: const CircularProgressIndicator(
                     strokeWidth: 2,
                     valueColor:
                         AlwaysStoppedAnimation<Color>(AppColors.textWhite),
@@ -175,7 +187,7 @@ class EditProfileView extends StatelessWidget {
                 )
               : Text(
                   "KAYDET",
-                  style: GoogleFonts.syne(
+                  style: GoogleFonts.outfit(
                     color: AppColors.textWhite,
                     fontWeight: FontWeight.w800,
                     fontSize: 16.sp,
@@ -190,21 +202,29 @@ class EditProfileView extends StatelessWidget {
   void _showImageSourceActionSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: AppColors.primaryLight,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+      ),
       builder: (context) => SafeArea(
         child: Wrap(
           children: [
             ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Galeriden Seç'),
+              leading: Icon(Icons.photo_library_rounded,
+                  color: AppColors.accentCyan),
+              title: Text('Galeriden Seç',
+                  style: GoogleFonts.plusJakartaSans(
+                      color: AppColors.textPrimary)),
               onTap: () {
                 _pickImage(ImageSource.gallery);
                 Navigator.of(context).pop();
               },
             ),
             ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text('Kamera ile Çek'),
+              leading: Icon(Icons.camera_alt_rounded, color: AppColors.accent),
+              title: Text('Kamera ile Çek',
+                  style: GoogleFonts.plusJakartaSans(
+                      color: AppColors.textPrimary)),
               onTap: () {
                 _pickImage(ImageSource.camera);
                 Navigator.of(context).pop();
@@ -243,16 +263,27 @@ class EditProfileView extends StatelessWidget {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text("KAYDEDİLMEMİŞ DEĞİŞİKLİKLER",
-              style: GoogleFonts.syne(fontWeight: FontWeight.w800)),
+          backgroundColor: AppColors.primaryLight,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24.r),
+            side: BorderSide(color: Colors.white.withOpacity(0.1)),
+          ),
+          title: Text("DEĞİŞİKLİKLER KAYBOLACAK",
+              style: GoogleFonts.outfit(
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textPrimary,
+                  fontSize: 18.sp)),
           content: Text(
-              "Yaptığınız değişiklikler kaybolacak. Çıkmak istiyor musunuz?",
-              style: GoogleFonts.instrumentSans()),
+              "Yaptığınız değişiklikler kaydedilmedi. Çıkmak istiyor musunuz?",
+              style:
+                  GoogleFonts.plusJakartaSans(color: AppColors.textSecondary)),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text("HAYIR",
-                  style: GoogleFonts.syne(color: AppColors.primary)),
+                  style: GoogleFonts.outfit(
+                      color: AppColors.accentCyan,
+                      fontWeight: FontWeight.w700)),
             ),
             TextButton(
               onPressed: () {
@@ -260,7 +291,9 @@ class EditProfileView extends StatelessWidget {
                 Navigator.pop(context);
               },
               child: Text("EVET",
-                  style: GoogleFonts.syne(color: AppColors.errorColor)),
+                  style: GoogleFonts.outfit(
+                      color: AppColors.errorColor,
+                      fontWeight: FontWeight.w800)),
             ),
           ],
         ),

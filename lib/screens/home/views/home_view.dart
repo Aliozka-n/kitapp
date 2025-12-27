@@ -19,31 +19,133 @@ class HomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      slivers: [
-        _buildAppBar(context),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 24.h),
-                _buildSearchBar(),
-                SizedBox(height: 32.h),
-                _buildSectionHeader("YENİ EKLENENLER", () {}),
-                SizedBox(height: 16.h),
-                _buildHorizontalBooks(viewModel.newlyListedBooks),
-                SizedBox(height: 40.h),
-                _buildSectionHeader("KEŞFET", () {}),
-                _buildFilterChips(),
-                SizedBox(height: 16.h),
-              ],
+    final isSearching = viewModel.isSearchActive;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppColors.backgroundCanvas,
+            AppColors.primary,
+          ],
+        ),
+      ),
+      child: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          _buildAppBar(context),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 16.h),
+                  _buildSearchBar(),
+
+                  // Arama aktif değilken: Yeni Eklenenler ve Keşfet göster
+                  AnimatedCrossFade(
+                    firstChild: _buildDiscoverySections(),
+                    secondChild: _buildSearchResultsHeader(),
+                    crossFadeState: isSearching
+                        ? CrossFadeState.showSecond
+                        : CrossFadeState.showFirst,
+                    duration: const Duration(milliseconds: 300),
+                    sizeCurve: Curves.easeOutCubic,
+                    firstCurve: Curves.easeOut,
+                    secondCurve: Curves.easeIn,
+                  ),
+                ],
+              ),
             ),
           ),
+          _buildRecommendedGrid(context),
+          SliverToBoxAdapter(child: SizedBox(height: 140.h)),
+        ],
+      ),
+    );
+  }
+
+  /// Ana sayfa keşif bölümleri (Arama aktif değilken görünür)
+  Widget _buildDiscoverySections() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(height: 36.h),
+        _buildSectionHeader("YENİ EKLENENLER", () {}),
+        SizedBox(height: 20.h),
+        _buildHorizontalBooks(viewModel.newlyListedBooks),
+        SizedBox(height: 44.h),
+        _buildSectionHeader("KEŞFET", () {}),
+        SizedBox(height: 16.h),
+        _buildFilterChips(),
+        SizedBox(height: 24.h),
+      ],
+    );
+  }
+
+  /// Arama sonuçları başlığı (Arama aktifken görünür)
+  Widget _buildSearchResultsHeader() {
+    final resultCount = viewModel.books.length;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(height: 32.h),
+        Row(
+          children: [
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: AppColors.accentCyan.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(8.r),
+                border: Border.all(
+                  color: AppColors.accentCyan.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.search_rounded,
+                    size: 14.sp,
+                    color: AppColors.accentCyan,
+                  ),
+                  SizedBox(width: 6.w),
+                  Text(
+                    "ARAMA SONUÇLARI",
+                    style: GoogleFonts.outfit(
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1,
+                      color: AppColors.accentCyan,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight.withOpacity(0.6),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Text(
+                "$resultCount kitap",
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+          ],
         ),
-        _buildRecommendedGrid(context),
-        SliverToBoxAdapter(child: SizedBox(height: 100.h)),
+        SizedBox(height: 24.h),
       ],
     );
   }
@@ -52,24 +154,35 @@ class HomeView extends StatelessWidget {
     return SliverAppBar(
       floating: true,
       pinned: true,
-      expandedHeight: 80.h,
-      backgroundColor: AppColors.backgroundLight,
+      expandedHeight: 100.h,
+      backgroundColor: AppColors.backgroundCanvas.withOpacity(0.8),
+      elevation: 0,
       centerTitle: false,
       title: Text(
         "KİTAPP",
-        style: GoogleFonts.syne(
+        style: GoogleFonts.outfit(
           color: AppColors.textPrimary,
-          fontSize: 28.sp,
+          fontSize: 24.sp,
           fontWeight: FontWeight.w800,
-          letterSpacing: -1,
+          letterSpacing: -0.5,
         ),
       ),
       actions: [
-        IconButton(
-          onPressed: () => NavigationUtil.navigateToProfile(context),
-          icon: const Icon(Icons.person_outline),
+        Padding(
+          padding: EdgeInsets.only(right: 12.w),
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border:
+                  Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+            ),
+            child: IconButton(
+              onPressed: () => NavigationUtil.navigateToProfile(context),
+              icon: Icon(Icons.person_2_outlined,
+                  color: AppColors.textPrimary, size: 22.sp),
+            ),
+          ),
         ),
-        SizedBox(width: 16.w),
       ],
     );
   }
@@ -79,7 +192,21 @@ class HomeView extends StatelessWidget {
       label: "ARAMA",
       hintText: "Kitap, yazar veya tür ara...",
       controller: viewModel.searchController,
-      prefixIcon: const Icon(Icons.search, color: AppColors.primary),
+      prefixIcon: const Icon(Icons.search_rounded),
+      suffixIcon: viewModel.isSearchActive
+          ? IconButton(
+              icon: Icon(
+                Icons.close_rounded,
+                size: 20.sp,
+                color: AppColors.accentCyan,
+              ),
+              onPressed: () {
+                viewModel.searchController.clear();
+                viewModel.reloadState();
+              },
+            )
+          : null,
+      onChanged: (_) => viewModel.reloadState(),
     );
   }
 
@@ -89,21 +216,22 @@ class HomeView extends StatelessWidget {
       children: [
         Text(
           title,
-          style: GoogleFonts.syne(
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1.5,
-            color: AppColors.primary,
+          style: GoogleFonts.outfit(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.5,
+            color: AppColors.textPrimary,
           ),
         ),
-        TextButton(
-          onPressed: onTap,
+        GestureDetector(
+          onTap: onTap,
           child: Text(
             "TÜMÜ",
-            style: GoogleFonts.syne(
+            style: GoogleFonts.outfit(
               fontSize: 12.sp,
-              fontWeight: FontWeight.w700,
-              color: AppColors.accent,
+              fontWeight: FontWeight.w600,
+              color: AppColors.accentCyan,
+              letterSpacing: 1,
             ),
           ),
         ),
@@ -114,13 +242,15 @@ class HomeView extends StatelessWidget {
   Widget _buildHorizontalBooks(List<BookResponse> books) {
     if (books.isEmpty) return const SizedBox.shrink();
     return SizedBox(
-      height: 280.h,
+      height: 290.h,
       child: ListView.separated(
+        physics: const BouncingScrollPhysics(),
         scrollDirection: Axis.horizontal,
         itemCount: books.length,
+        padding: EdgeInsets.only(right: 24.w),
         separatorBuilder: (context, index) => SizedBox(width: 20.w),
         itemBuilder: (context, index) => SizedBox(
-          width: 160.w,
+          width: 170.w,
           child: InkwellBookCardWidget(
             book: books[index],
             variant: InkwellBookCardVariant.rail,
@@ -136,75 +266,122 @@ class HomeView extends StatelessWidget {
 
   Widget _buildFilterChips() {
     return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
       scrollDirection: Axis.horizontal,
-      child: Row(
-        children: HomeConstants.filters.map((filter) {
-          final isSelected = viewModel.selectedFilter == filter;
-          return Padding(
-            padding: EdgeInsets.only(right: 12.w),
-            child: ChoiceChip(
-              label: Text(filter.toUpperCase()),
-              selected: isSelected,
-              onSelected: (selected) {
-                if (selected) viewModel.setFilter(filter);
-              },
-              selectedColor: AppColors.primary,
-              backgroundColor: AppColors.backgroundWhite,
-              labelStyle: GoogleFonts.syne(
-                fontSize: 11.sp,
-                fontWeight: FontWeight.w800,
-                color: isSelected ? AppColors.textWhite : AppColors.primary,
-                letterSpacing: 1,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.zero,
-                side: BorderSide(
-                  color: AppColors.primary,
-                  width: isSelected ? 0 : 1.5,
+      child: Padding(
+        padding: EdgeInsets.only(bottom: 8.h),
+        child: Row(
+          children: HomeConstants.filters.map((filter) {
+            final isSelected = viewModel.selectedFilter == filter;
+            return Padding(
+              padding: EdgeInsets.only(right: 10.w),
+              child: GestureDetector(
+                onTap: () => viewModel.setFilter(filter),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.easeOutExpo,
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 18.w, vertical: 10.h),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? AppColors.accent
+                        : AppColors.primaryLight.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(14.r),
+                    border: Border.all(
+                      color: isSelected
+                          ? AppColors.accentLight
+                          : Colors.white.withOpacity(0.08),
+                      width: 1.2,
+                    ),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: AppColors.accent.withOpacity(0.4),
+                              blurRadius: 15,
+                              offset: const Offset(0, 4),
+                            )
+                          ]
+                        : [],
+                  ),
+                  child: Text(
+                    filter.toUpperCase(),
+                    style: GoogleFonts.outfit(
+                      fontSize: 11.sp,
+                      fontWeight:
+                          isSelected ? FontWeight.w800 : FontWeight.w500,
+                      color:
+                          isSelected ? Colors.white : AppColors.textSecondary,
+                      letterSpacing: 1,
+                    ),
+                  ),
                 ),
               ),
-              showCheckmark: false,
-            ),
-          );
-        }).toList(),
+            );
+          }).toList(),
+        ),
       ),
     );
   }
 
   Widget _buildRecommendedGrid(BuildContext context) {
     final books = viewModel.books;
+    final isSearching = viewModel.isSearchActive;
 
     if (books.isEmpty) {
       return SliverToBoxAdapter(
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 24.h),
+          padding: EdgeInsets.all(24.w),
           child: Container(
-            padding: EdgeInsets.all(18.w),
+            padding: EdgeInsets.all(32.w),
             decoration: BoxDecoration(
-              color: AppColors.backgroundWhite,
-              border: Border.all(color: AppColors.primary, width: 2),
-              boxShadow: AppShadows.sharp,
+              color: AppColors.primaryLight,
+              borderRadius: BorderRadius.circular(24.r),
+              border: Border.all(color: Colors.white.withOpacity(0.05)),
             ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  'HENÜZ KİTAP YOK',
-                  style: GoogleFonts.syne(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.6,
-                    color: AppColors.primary,
+                // Arama durumuna göre farklı ikon
+                Container(
+                  width: 64.w,
+                  height: 64.w,
+                  decoration: BoxDecoration(
+                    color: isSearching
+                        ? AppColors.accentCyan.withOpacity(0.1)
+                        : AppColors.accent.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    isSearching
+                        ? Icons.search_off_rounded
+                        : Icons.auto_stories_outlined,
+                    size: 28.sp,
+                    color:
+                        isSearching ? AppColors.accentCyan : AppColors.accent,
                   ),
                 ),
-                SizedBox(height: 8.h),
+                SizedBox(height: 20.h),
                 Text(
-                  'Keşfetmeye başlamak için ilk kitabı ekle.',
-                  style: GoogleFonts.instrumentSans(
-                    fontSize: 13.sp,
-                    color: AppColors.textSecondary,
-                    height: 1.35,
+                  isSearching ? 'SONUÇ BULUNAMADI' : 'HENÜZ KİTAP YOK',
+                  style: GoogleFonts.outfit(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1,
+                    color: AppColors.textPrimary,
                   ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 12.h),
+                Text(
+                  isSearching
+                      ? '"${viewModel.searchController.text}" için sonuç bulunamadı.\nFarklı anahtar kelimeler deneyin.'
+                      : 'Keşfetmeye başlamak için ilk kitabı ekle.',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 14.sp,
+                    color: AppColors.textSecondary,
+                    height: 1.6,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ],
             ),
@@ -213,18 +390,13 @@ class HomeView extends StatelessWidget {
       );
     }
 
-    // Compute a safe aspect ratio so card content never overflows.
     final screenW = MediaQuery.sizeOf(context).width;
     final pad = 24.w * 2;
     final crossSpacing = 20.w;
     const crossAxisCount = 2;
     final tileW = (screenW - pad - crossSpacing) / crossAxisCount;
-    final coverH = tileW * 1.25; // 4:5
-    final textH = 10.h +
-        14.sp +
-        4.h +
-        12.sp +
-        6.h; // spacing + title + spacing + meta + slack
+    final coverH = tileW * 1.35;
+    final textH = 80.h;
     final tileH = coverH + textH;
     final ratio = tileW / tileH;
 

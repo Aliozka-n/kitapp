@@ -15,12 +15,19 @@ class ProfileTabSwitcherWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        _buildTab("KİTAPLARIM", 0),
-        SizedBox(width: 16.w),
-        _buildTab("FAVORİLERİM", 1),
-      ],
+    return Container(
+      padding: EdgeInsets.all(6.w),
+      decoration: BoxDecoration(
+        color: AppColors.primaryLight,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+      ),
+      child: Row(
+        children: [
+          _buildTab("KİTAPLARIM", 0),
+          _buildTab("FAVORİLERİM", 1),
+        ],
+      ),
     );
   }
 
@@ -29,20 +36,22 @@ class ProfileTabSwitcherWidget extends StatelessWidget {
     return Expanded(
       child: GestureDetector(
         onTap: () => onTabChanged(index),
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 14.h),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          padding: EdgeInsets.symmetric(vertical: 12.h),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primary : AppColors.backgroundWhite,
-            border: Border.all(color: AppColors.primary, width: 1.5),
+            gradient: isSelected ? AppGradients.cosmic : null,
+            borderRadius: BorderRadius.circular(16.r),
+            boxShadow: isSelected ? AppShadows.glow : [],
           ),
           child: Center(
             child: Text(
               label,
-              style: GoogleFonts.syne(
+              style: GoogleFonts.outfit(
                 fontSize: 12.sp,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 letterSpacing: 1,
-                color: isSelected ? AppColors.textWhite : AppColors.primary,
+                color: isSelected ? Colors.white : AppColors.textSecondary,
               ),
             ),
           ),
@@ -51,3 +60,4 @@ class ProfileTabSwitcherWidget extends StatelessWidget {
     );
   }
 }
+

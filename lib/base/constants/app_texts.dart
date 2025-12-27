@@ -1,6 +1,7 @@
 /// App Texts - Sabit metinler
 class AppTexts {
-  static const appName = "KitApp";
+  static const appName = "KİTAPP";
+
 
   // Login
   static const email = "Email";

@@ -14,6 +14,9 @@ class NavigationUtil {
   static const String forgotPasswordScreen = '/forgot-password';
   static const String editProfileScreen = '/edit-profile';
   static const String searchScreen = '/search';
+  static const String settingsScreen = '/settings';
+  static const String privacyPolicyScreen = '/privacy-policy';
+  static const String termsOfServiceScreen = '/terms-of-service';
 
   /// Navigate to page
   static Future<T?> navigateToPage<T>(
@@ -112,7 +115,8 @@ class NavigationUtil {
   }
 
   /// Navigate to Book Detail
-  static Future<T?> navigateToBookDetail<T>(BuildContext context, String bookId) {
+  static Future<T?> navigateToBookDetail<T>(
+      BuildContext context, String bookId) {
     return navigateToPage(context, bookDetailScreen, arguments: bookId);
   }
 
@@ -132,5 +136,19 @@ class NavigationUtil {
       },
     );
   }
-}
 
+  /// Navigate to Settings
+  static Future<T?> navigateToSettings<T>(BuildContext context) {
+    return navigateToPage(context, settingsScreen);
+  }
+
+  /// Navigate to Privacy Policy
+  static Future<T?> navigateToPrivacyPolicy<T>(BuildContext context) {
+    return navigateToPage(context, privacyPolicyScreen);
+  }
+
+  /// Navigate to Terms of Service
+  static Future<T?> navigateToTermsOfService<T>(BuildContext context) {
+    return navigateToPage(context, termsOfServiceScreen);
+  }
+}

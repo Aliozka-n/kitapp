@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../base/constants/app_constants.dart';
 import '../../base/views/base_view.dart';
-import '../../common_widgets/inkwell_bottom_nav_bar.dart';
+import '../../common_widgets/futuristic_bottom_nav_bar.dart';
 import '../add_book/add_book_screen.dart';
 import '../messages/messages_screen.dart';
 import '../profile/profile_screen.dart';
@@ -18,35 +18,45 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _tabIndex = 0;
+  int _previousTabIndex = 0;
   late final HomeViewModel _homeViewModel;
-  late final List<InkwellBottomNavItem> _navItems;
+  late final List<BottomNavItem> _navItems;
 
   @override
   void initState() {
     super.initState();
     _homeViewModel = HomeViewModel(service: HomeService());
     _navItems = const [
-      InkwellBottomNavItem(
+      BottomNavItem(
         icon: Icons.home_outlined,
         activeIcon: Icons.home_rounded,
         label: 'Ana Sayfa',
       ),
-      InkwellBottomNavItem(
+      BottomNavItem(
         icon: Icons.add_box_outlined,
         activeIcon: Icons.add_box_rounded,
         label: 'Ekle',
       ),
-      InkwellBottomNavItem(
+      BottomNavItem(
         icon: Icons.chat_bubble_outline,
         activeIcon: Icons.chat_bubble_rounded,
         label: 'Mesajlar',
       ),
-      InkwellBottomNavItem(
+      BottomNavItem(
         icon: Icons.person_outline,
         activeIcon: Icons.person,
         label: 'Profil',
       ),
     ];
+  }
+
+  void _onTabChanged(int index) {
+    // Profil veya başka bir sekmeden Ana Sayfa'ya dönüldüğünde yenile
+    if (index == 0 && _previousTabIndex != 0) {
+      _homeViewModel.loadBooks(isSilent: true);
+    }
+    _previousTabIndex = _tabIndex;
+    setState(() => _tabIndex = index);
   }
 
   @override
@@ -58,7 +68,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      extendBody: true, // Floating bottom bar requires this
+      backgroundColor: AppColors.backgroundCanvas,
       body: IndexedStack(
         index: _tabIndex,
         children: [
@@ -69,8 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           AddBookScreen(
             onBookAdded: () {
-              // Kitap eklendi -> Ana sayfaya dön ve listeyi yenile
-              setState(() => _tabIndex = 0);
+              _onTabChanged(0);
               _homeViewModel.loadBooks();
             },
           ),
@@ -78,10 +88,9 @@ class _HomeScreenState extends State<HomeScreen> {
           const ProfileScreen(),
         ],
       ),
-      // UI dokümanına göre "Ekle" bir sekme: FAB ile tekrar etmiyoruz.
-      bottomNavigationBar: InkwellBottomNavBar(
+      bottomNavigationBar: FuturisticBottomNavBar(
         currentIndex: _tabIndex,
-        onTap: (index) => setState(() => _tabIndex = index),
+        onTap: _onTabChanged,
         items: _navItems,
       ),
     );

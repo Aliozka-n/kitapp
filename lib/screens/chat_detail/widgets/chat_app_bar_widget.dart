@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../base/constants/app_constants.dart';
 import '../constants/chat_style_hud.dart';
 
 class ChatAppBarWidget extends StatelessWidget {
@@ -40,17 +41,31 @@ class ChatAppBarWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title.toUpperCase(),
+                  title,
                   style: ChatHudStyle.title(16.sp),
                 ),
-                Text(
-                  subtitle.toUpperCase(),
-                  style: ChatHudStyle.label(10.sp, color: ChatHudStyle.dim),
+                SizedBox(height: 2.h),
+                Row(
+                  children: [
+                    Container(
+                      width: 6.w,
+                      height: 6.w,
+                      decoration: const BoxDecoration(
+                        color: AppColors.successColor,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    SizedBox(width: 6.w),
+                    Text(
+                      subtitle.toUpperCase(),
+                      style: ChatHudStyle.label(9.sp, color: ChatHudStyle.cyan),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-          _buildStatusIndicator(),
+          _buildActionIcon(),
         ],
       ),
     );
@@ -58,38 +73,40 @@ class ChatAppBarWidget extends StatelessWidget {
 
   Widget _buildAvatar() {
     return Container(
-      width: 42.w,
-      height: 42.w,
+      width: 44.w,
+      height: 44.w,
       decoration: BoxDecoration(
-        color: ChatHudStyle.space,
-        border: Border.all(color: ChatHudStyle.cyan.withOpacity(0.5), width: 1),
+        shape: BoxShape.circle,
+        gradient: AppGradients.cosmic,
+        boxShadow: AppShadows.glow,
+        border: Border.all(color: Colors.white.withOpacity(0.1), width: 1.5),
       ),
       child: Center(
         child: Text(
           title.isNotEmpty ? title[0].toUpperCase() : "?",
-          style: ChatHudStyle.title(20.sp),
+          style: ChatHudStyle.title(18.sp, color: Colors.white),
         ),
       ),
     );
   }
 
-  Widget _buildStatusIndicator() {
+  Widget _buildActionIcon() {
     return Container(
-      width: 32.w,
-      height: 32.w,
+      width: 38.w,
+      height: 38.w,
       decoration: BoxDecoration(
-        border: Border.all(color: ChatHudStyle.cyan.withOpacity(0.3)),
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        color: Colors.white.withOpacity(0.03),
       ),
       child: Center(
-        child: Container(
-          width: 8.w,
-          height: 8.w,
-          decoration: BoxDecoration(
-            color: ChatHudStyle.cyan,
-            boxShadow: ChatHudStyle.glowCyan,
-          ),
+        child: Icon(
+          Icons.more_vert_rounded,
+          size: 20.sp,
+          color: ChatHudStyle.dim,
         ),
       ),
     );
   }
+
 }

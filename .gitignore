@@ -42,3 +42,10 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+/DUZELTMELER_OZET.md
+/SUPABASE_GUNCELLEMELER.md
+/supabase_schema.sql
+/supabase_ui_updates.sql
+/supabase_update_for_contact_feature.sql
+/UI_TASARIM_DOKUMANTASYONU.md
+/UYGULAMA_DEGERLENDIRME_RAPORU.md

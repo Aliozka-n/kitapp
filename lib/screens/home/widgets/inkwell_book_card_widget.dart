@@ -1,8 +1,8 @@
+import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 import '../../../base/constants/app_constants.dart';
 import '../../../domain/dtos/book_dto.dart';
 
@@ -11,12 +11,14 @@ enum InkwellBookCardVariant { rail, grid }
 class InkwellBookCardWidget extends StatelessWidget {
   final BookResponse book;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
   final InkwellBookCardVariant variant;
 
   const InkwellBookCardWidget({
     super.key,
     required this.book,
     required this.onTap,
+    this.onLongPress,
     required this.variant,
   });
 
@@ -25,45 +27,43 @@ class InkwellBookCardWidget extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final w = constraints.maxWidth.isFinite ? constraints.maxWidth : 160.w;
-        final titleSize =
-            variant == InkwellBookCardVariant.grid ? 13.sp : 14.sp;
+        final titleSize = variant == InkwellBookCardVariant.grid ? 14.sp : 15.sp;
         final metaSize = 12.sp;
 
-        // Grid'de parent genelde "tight height" verir; 1-2px sapma bile overflow yapar.
-        // Bu yüzden cover yüksekliğini mevcut maxHeight'e göre hesaplayıp güvenli hale getiriyoruz.
         final hasMaxH = constraints.maxHeight.isFinite && constraints.maxHeight > 0;
-        final titleH = titleSize * 1.15;
-        final metaH = metaSize * 1.15;
-        final gaps = 10.h + 4.h; // cover->title + title->meta
+        final titleH = titleSize * 1.3;
+        final metaH = metaSize * 1.3;
+        final gaps = 12.h + 4.h; 
         final textBlockH = gaps + titleH + metaH;
 
-        // 4:5 cover ratio "hedef", ama maxHeight darsa cover otomatik kısalır.
-        final targetCoverH = w * 1.25;
+        final targetCoverH = variant == InkwellBookCardVariant.rail ? w * 1.4 : w * 1.35;
         final coverH = hasMaxH
             ? (constraints.maxHeight - textBlockH).clamp(0.0, targetCoverH)
             : targetCoverH;
 
         return GestureDetector(
           onTap: onTap,
+          onLongPress: onLongPress,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Cover
-              SizedBox(
+              // Cover with futuristic styling
+              Container(
                 height: coverH,
                 width: double.infinity,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AppColors.secondaryLight,
-                    border: Border.all(color: AppColors.primary, width: 2),
-                    boxShadow: AppShadows.sharp,
-                  ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20.r),
+                  color: AppColors.primaryLight,
+                  boxShadow: AppShadows.card,
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20.r),
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
                       if ((book.imageUrl ?? '').trim().isNotEmpty)
                         CachedNetworkImage(
-                          imageUrl: book.imageUrl!,
+                          imageUrl: book.imageUrl ?? "",
                           fit: BoxFit.cover,
                           placeholder: (context, url) => const Center(
                             child: SizedBox(
@@ -78,44 +78,72 @@ class InkwellBookCardWidget extends StatelessWidget {
                       else
                         const _CoverFallbackIcon(),
 
-                      // Editorial stamp
+                      // Floating tag
                       Positioned(
-                        left: 0,
+                        top: 12.h,
+                        right: 12.w,
+                        child: _Tag(
+                          text: (book.type ?? 'KİTAP'),
+                        ),
+                      ),
+                      
+                      // Bottom gradient overlay
+                      Positioned(
                         bottom: 0,
-                        child: _Stamp(
-                          text: (book.type ?? 'KİTAP').toUpperCase(),
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          height: 60.h,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.bottomCenter,
+                              end: Alignment.topCenter,
+                              colors: [
+                                Colors.black.withOpacity(0.4),
+                                Colors.transparent,
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
-              SizedBox(height: 10.h),
-              Text(
-                (book.name?.trim().isNotEmpty ?? false)
-                    ? book.name!.toUpperCase()
-                    : 'İSİMSİZ',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.syne(
-                  fontSize: titleSize,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
-                  letterSpacing: -0.2,
-                  height: 1.15,
-                ),
-              ),
-              SizedBox(height: 4.h),
-              Text(
-                (book.writer?.trim().isNotEmpty ?? false)
-                    ? book.writer!
-                    : 'Yazar Belirtilmemiş',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.instrumentSans(
-                  fontSize: metaSize,
-                  color: AppColors.textSecondary,
-                  height: 1.2,
+              SizedBox(height: 12.h),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      (book.name?.trim().isNotEmpty ?? false)
+                          ? book.name ?? ""
+                          : 'İsimsiz',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.outfit(
+                        fontSize: titleSize,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                        letterSpacing: 0,
+                        height: 1.2,
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      (book.writer?.trim().isNotEmpty ?? false)
+                          ? book.writer ?? ""
+                          : 'Yazar Belirtilmemiş',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: metaSize,
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -133,44 +161,50 @@ class _CoverFallbackIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Container(
-        width: 52,
-        height: 52,
+        padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: AppColors.backgroundWhite,
-          border: Border.all(color: AppColors.primary, width: 2),
+          color: Colors.white.withOpacity(0.05),
+          shape: BoxShape.circle,
         ),
-        child: const Icon(Icons.menu_book_rounded, color: AppColors.primary),
+        child: Icon(Icons.auto_stories_rounded, color: AppColors.accent, size: 32.sp),
       ),
     );
   }
 }
 
-class _Stamp extends StatelessWidget {
+class _Tag extends StatelessWidget {
   final String text;
 
-  const _Stamp({required this.text});
+  const _Tag({required this.text});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: AppColors.primary,
-        border: Border.all(color: AppColors.primary, width: 2),
-      ),
-      child: Text(
-        text,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: GoogleFonts.syne(
-          fontSize: 10.sp,
-          fontWeight: FontWeight.w800,
-          letterSpacing: 1.2,
-          color: AppColors.textWhite,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10.r),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(10.r),
+            border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+          ),
+          child: Text(
+            text,
+            style: GoogleFonts.outfit(
+              fontSize: 10.sp,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
+              color: AppColors.accentCyan,
+            ),
+          ),
         ),
       ),
     );
   }
 }
+
+
 
 
