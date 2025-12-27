@@ -61,24 +61,74 @@ class NavigationUtil {
     Navigator.pop<T>(context, result);
   }
 
+  /// Go back - Alias for goBack
+  static void pop<T>(BuildContext context, [T? result]) {
+    Navigator.pop<T>(context, result);
+  }
+
   /// Go back until
   static void goBackUntil(BuildContext context, String routeName) {
     Navigator.popUntil(context, (route) => route.settings.name == routeName);
   }
 
+  /// Navigate to Login
+  static Future<T?> navigateToLogin<T>(BuildContext context) {
+    return navigateAndRemoveUntil(context, loginScreen);
+  }
+
+  /// Navigate to Register
+  static Future<T?> navigateToRegister<T>(BuildContext context) {
+    return navigateToPage(context, registerScreen);
+  }
+
+  /// Navigate to Home
+  static Future<T?> navigateToHome<T>(BuildContext context) {
+    return navigateAndRemoveUntil(context, homeScreen);
+  }
+
+  /// Navigate to Forgot Password
+  static Future<T?> navigateToForgotPassword<T>(BuildContext context) {
+    return navigateToPage(context, forgotPasswordScreen);
+  }
+
+  /// Navigate to Profile
+  static Future<T?> navigateToProfile<T>(BuildContext context) {
+    return navigateToPage(context, profileScreen);
+  }
+
+  /// Navigate to Edit Profile
+  static Future<T?> navigateToEditProfile<T>(BuildContext context) {
+    return navigateToPage(context, editProfileScreen);
+  }
+
+  /// Navigate to Add Book
+  static Future<T?> navigateToAddBook<T>(BuildContext context) {
+    return navigateToPage(context, addBookScreen);
+  }
+
+  /// Navigate to Search
+  static Future<T?> navigateToSearch<T>(BuildContext context) {
+    return navigateToPage(context, searchScreen);
+  }
+
+  /// Navigate to Book Detail
+  static Future<T?> navigateToBookDetail<T>(BuildContext context, String bookId) {
+    return navigateToPage(context, bookDetailScreen, arguments: bookId);
+  }
+
   /// Navigate to Chat Detail Screen
   /// Helper method to standardize ChatDetailScreen navigation
   static Future<T?> navigateToChatDetail<T>(
-    BuildContext context, {
-    required String receiverId,
-    String? receiverName,
-  }) {
+    BuildContext context,
+    String receiverId,
+    String receiverName,
+  ) {
     return navigateToPage<T>(
       context,
       chatDetailScreen,
       arguments: {
         'receiverId': receiverId,
-        'receiverName': receiverName ?? 'Kullanıcı',
+        'receiverName': receiverName,
       },
     );
   }

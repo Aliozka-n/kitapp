@@ -1,10 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import '../constants/app_size.dart';
 import '../constants/app_constants.dart';
 import '../viewmodels/base_view_model.dart';
-import '../../common_widgets/loading_widget.dart';
+import '../common_widgets/loading_widget.dart';
 
 /// Base View sınıfı - Tüm ekranlar bu sınıfı kullanmalıdır
 class BaseView<T extends BaseViewModel> extends StatefulWidget {
@@ -53,9 +54,27 @@ class _BaseViewState<T extends BaseViewModel> extends State<BaseView<T>> {
     }
 
     // UI'ı göster, eğer loading varsa overlay loading ekle
+    Widget content;
+    try {
+      content = widget.builder!(context, viewModel);
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        // ignore: avoid_print
+        print('BaseView builder error - ${viewModel.runtimeType}: $e');
+        // ignore: avoid_print
+        print('Stack trace: $stackTrace');
+      }
+      content = Center(
+        child: Text(
+          'Bir hata oluştu.',
+          style: const TextStyle(color: Colors.red),
+        ),
+      );
+    }
+
     return Stack(
       children: [
-        widget.builder!(context, viewModel),
+        content,
         if (viewModel.isLoading)
           IgnorePointer(
             ignoring: false,

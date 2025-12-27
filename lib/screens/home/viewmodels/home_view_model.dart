@@ -67,7 +67,7 @@ class HomeViewModel extends BaseViewModel {
 
       if (response.isSuccessful && response.data != null) {
         _books = response.data!;
-        _applyFilter();
+        await _applyFilter();
         _errorMessage = null;
         filteredBooksNotifier.value = _filteredBooks;
         reloadState();
@@ -124,50 +124,55 @@ class HomeViewModel extends BaseViewModel {
 
   /// Filter uygula
   Future<void> _applyFilter() async {
-    if (_selectedFilter == HomeConstants.filters[0]) {
-      // Tümü - Tüm kitaplar
-      _filteredBooks = _books;
-    } else if (_selectedFilter == HomeConstants.filters[1]) {
-      // Kitaplarım - Sadece kullanıcının kitapları
-      final currentUserId = await _getCurrentUserId();
-      if (currentUserId != null) {
-        _filteredBooks = _books.where((book) {
-          return book.userId == currentUserId;
-        }).toList();
-      } else {
-        _filteredBooks = [];
-      }
-    } else if (_selectedFilter == HomeConstants.filters[2]) {
-      // Favorilerim - Favori kitaplar
-      try {
-        final response = await _favoritesService.getFavorites();
-        if (response.isSuccessful && response.data != null) {
-          final favoriteBookIds = response.data!.map((b) => b.id).toSet();
+    try {
+      if (_selectedFilter == HomeConstants.filters[0]) {
+        // Tümü - Tüm kitaplar
+        _filteredBooks = _books;
+      } else if (_selectedFilter == HomeConstants.filters[1]) {
+        // Kitaplarım - Sadece kullanıcının kitapları
+        final currentUserId = await _getCurrentUserId();
+        if (currentUserId != null) {
           _filteredBooks = _books.where((book) {
-            return favoriteBookIds.contains(book.id);
+            return book.userId == currentUserId;
           }).toList();
         } else {
           _filteredBooks = [];
         }
-      } catch (e) {
-        _filteredBooks = [];
+      } else if (_selectedFilter == HomeConstants.filters[2]) {
+        // Favorilerim - Favori kitaplar
+        try {
+          final response = await _favoritesService.getFavorites();
+          if (response.isSuccessful && response.data != null) {
+            final favoriteBookIds = response.data!.map((b) => b.id).toSet();
+            _filteredBooks = _books.where((book) {
+              return favoriteBookIds.contains(book.id);
+            }).toList();
+          } else {
+            _filteredBooks = [];
+          }
+        } catch (e) {
+          _filteredBooks = [];
+        }
+      } else if (_selectedFilter == HomeConstants.filters[3]) {
+        // Popüler - Tüm kitaplar (en yeni önce)
+        _filteredBooks = List.from(_books);
+        _filteredBooks.sort((a, b) {
+          final aDate = a.createdAt ?? DateTime(1970);
+          final bDate = b.createdAt ?? DateTime(1970);
+          return bDate.compareTo(aDate);
+        });
+      } else if (_selectedFilter == HomeConstants.filters[4]) {
+        // Yakınımda - TODO: Implement location-based filtering
+        _filteredBooks = _books;
+      } else {
+        // Filter by type/genre
+        _filteredBooks = _books.where((book) {
+          return book.type?.toLowerCase() == _selectedFilter.toLowerCase();
+        }).toList();
       }
-    } else if (_selectedFilter == HomeConstants.filters[3]) {
-      // Popüler - Tüm kitaplar (en yeni önce)
-      _filteredBooks = List.from(_books);
-      _filteredBooks.sort((a, b) {
-        final aDate = a.createdAt ?? DateTime(1970);
-        final bDate = b.createdAt ?? DateTime(1970);
-        return bDate.compareTo(aDate);
-      });
-    } else if (_selectedFilter == HomeConstants.filters[4]) {
-      // Yakınımda - TODO: Implement location-based filtering
-      _filteredBooks = _books;
-    } else {
-      // Filter by type/genre
-      _filteredBooks = _books.where((book) {
-        return book.type?.toLowerCase() == _selectedFilter.toLowerCase();
-      }).toList();
+    } catch (e) {
+      // Hata durumunda boş liste döndür
+      _filteredBooks = [];
     }
   }
 

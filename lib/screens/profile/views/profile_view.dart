@@ -1,332 +1,224 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../base/constants/app_constants.dart';
-import '../../../base/constants/app_size.dart';
-import '../../../base/constants/app_edge_insets.dart';
-import '../../../base/constants/app_texts.dart';
-import '../../../common_widgets/button_widget.dart';
-import '../../../common_widgets/alert_dialog_widget.dart';
-import '../../../common_widgets/empty_state_widget.dart';
-import '../../../common_widgets/book_card_shimmer.dart';
 import '../../../utils/navigation_util.dart';
-import '../../home/widgets/book_card_widget.dart';
 import '../viewmodels/profile_view_model.dart';
+import '../widgets/profile_header_widget.dart';
+import '../widgets/profile_stat_tile_widget.dart';
+import '../widgets/profile_action_tile_widget.dart';
+import '../widgets/profile_tab_switcher_widget.dart';
+import '../widgets/profile_book_card_widget.dart';
+import '../widgets/profile_empty_state_widget.dart';
 
-/// Profile View - User profile screen
 class ProfileView extends StatelessWidget {
   final ProfileViewModel viewModel;
 
   const ProfileView({
-    Key? key,
+    super.key,
     required this.viewModel,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
-    final user = viewModel.user;
-    
-    if (user == null) {
-      return Scaffold(
-        appBar: AppBar(title: Text(AppTexts.profile)),
-        body: Center(
-          child: viewModel.errorMessage != null
-              ? Text(viewModel.errorMessage!)
-              : CircularProgressIndicator(),
-        ),
-      );
-    }
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          AppTexts.profile,
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 20.sp,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        backgroundColor: AppColors.backgroundWhite,
-        elevation: 0,
-      ),
+      backgroundColor: AppColors.backgroundLight,
       body: RefreshIndicator(
-        onRefresh: () => viewModel.refresh(),
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(), // Pull-to-refresh için gerekli
-          child: Padding(
-            padding: AppEdgeInsets.all(AppSizes.sizeXLarge),
-            child: Column(
-            children: [
-              // Profile Photo
-              CircleAvatar(
-                radius: 60.r,
-                backgroundColor: AppColors.primary,
-                child: Text(
-                  (user.name ?? 'U')[0].toUpperCase(),
-                  style: TextStyle(
-                    color: AppColors.textWhite,
-                    fontSize: 48.sp,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              
-              SizedBox(height: AppSizes.sizeLarge.h),
-              
-              // Username
-              Text(
-                user.name ?? 'Kullanıcı',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 24.sp,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              
-              SizedBox(height: AppSizes.sizeSmall.h),
-              
-              // Email
-              Text(
-                user.email ?? '',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 16.sp,
-                ),
-              ),
-              
-              SizedBox(height: AppSizes.sizeXLarge.h),
-              
-              // Shared Books Count
-              Container(
-                padding: AppEdgeInsets.all(AppSizes.sizeLarge),
-                decoration: BoxDecoration(
-                  color: AppColors.cardBackground,
-                  borderRadius: BorderRadius.circular(AppSizes.sizeLarge.w),
-                  boxShadow: AppShadows.cardShadow,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+        color: AppColors.primary,
+        onRefresh: viewModel.refresh,
+        child: CustomScrollView(
+          slivers: [
+            _buildAppBar(context),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24.w),
+                child: Column(
                   children: [
-                    Icon(
-                      Icons.book,
-                      color: AppColors.primary,
-                      size: 32.sp,
+                    SizedBox(height: 20.h),
+                    ProfileHeaderWidget(user: viewModel.user),
+                    SizedBox(height: 32.h),
+                    _buildStatsGrid(),
+                    SizedBox(height: 40.h),
+                    ProfileTabSwitcherWidget(
+                      selectedIndex: viewModel.selectedTabIndex,
+                      onTabChanged: viewModel.setTabIndex,
                     ),
-                    SizedBox(width: AppSizes.sizeMedium.w),
-                    Column(
-                      children: [
-                        Text(
-                          '${viewModel.sharedBooksCount}',
-                          style: TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 24.sp,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        Text(
-                          AppTexts.sharedBooks,
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 14.sp,
-                          ),
-                        ),
-                      ],
-                    ),
+                    SizedBox(height: 24.h),
                   ],
                 ),
               ),
-              
-              SizedBox(height: AppSizes.sizeXLarge.h),
-              
-              // Tabs
-              _buildTabs(context),
-              
-              SizedBox(height: AppSizes.sizeLarge.h),
-              
-              // Books List
-              _buildBooksList(context),
-              
-              SizedBox(height: AppSizes.sizeXXLarge.h),
-              
-              // Edit Profile Button
-              ButtonWidget(
-                textTitle: AppTexts.editProfile,
-                onTap: () {
-                  NavigationUtil.navigateToPage(
-                    context,
-                    NavigationUtil.editProfileScreen,
-                  );
-                },
-                isOutlined: true,
-                color: AppColors.primary,
-                textColor: AppColors.primary,
+            ),
+            _buildTabContent(context),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.all(24.w),
+                child: Column(
+                  children: [
+                    SizedBox(height: 24.h),
+                    _buildActionList(context),
+                    SizedBox(height: 48.h),
+                    _buildLogoutButton(context),
+                    SizedBox(height: 120.h),
+                  ],
+                ),
               ),
-              
-              SizedBox(height: AppSizes.sizeLarge.h),
-              
-              // Logout Button
-              ButtonWidget(
-                textTitle: AppTexts.logout,
-                onTap: () => _handleLogout(context),
-                color: AppColors.errorColor,
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
-      ),
     );
   }
 
-  Future<void> _handleLogout(BuildContext context) async {
-    final confirmed = await AlertDialogWidget.showConfirmationDialog(
-      context,
-      'Çıkış yapmak istediğinize emin misiniz?',
-      confirmText: 'Çıkış Yap',
-      cancelText: 'İptal',
+  Widget _buildAppBar(BuildContext context) {
+    return SliverAppBar(
+      floating: true,
+      pinned: true,
+      backgroundColor: AppColors.backgroundLight,
+      expandedHeight: 80.h,
+      centerTitle: false,
+      title: Text(
+        "PROFİL",
+        style: GoogleFonts.syne(
+          color: AppColors.textPrimary,
+          fontSize: 24.sp,
+          fontWeight: FontWeight.w800,
+          letterSpacing: -0.5,
+        ),
+      ),
+      actions: [
+        IconButton(
+          onPressed: () => NavigationUtil.navigateToEditProfile(context),
+          icon: const Icon(Icons.edit_note, size: 28),
+        ),
+        SizedBox(width: 16.w),
+      ],
     );
-    
-    if (confirmed && context.mounted) {
-      await viewModel.logout(context);
-      if (context.mounted) {
-        NavigationUtil.navigateAndRemoveUntil(
-          context,
-          NavigationUtil.loginScreen,
-        );
-      }
-    }
   }
 
-  Widget _buildTabs(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.greyLight,
-        borderRadius: BorderRadius.circular(AppSizes.sizeLarge.w),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: GestureDetector(
-              onTap: () => viewModel.setTabIndex(0),
-              child: Container(
-                padding: AppEdgeInsets.symmetric(
-                  vertical: AppSizes.sizeMedium,
-                ),
-                decoration: BoxDecoration(
-                  color: viewModel.selectedTabIndex == 0
-                      ? AppColors.primary
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(AppSizes.sizeLarge.w),
-                ),
-                child: Text(
-                  'Kitaplarım',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: viewModel.selectedTabIndex == 0
-                        ? AppColors.textWhite
-                        : AppColors.textSecondary,
-                    fontSize: 14.sp,
-                    fontWeight: viewModel.selectedTabIndex == 0
-                        ? FontWeight.w600
-                        : FontWeight.w400,
-                  ),
-                ),
-              ),
-            ),
+  Widget _buildStatsGrid() {
+    return Row(
+      children: [
+        Expanded(
+          child: ProfileStatTileWidget(
+            label: "KİTAPLAR",
+            value: viewModel.sharedBooksCount.toString(),
+            icon: Icons.auto_stories_outlined,
           ),
-          Expanded(
-            child: GestureDetector(
-              onTap: () => viewModel.setTabIndex(1),
-              child: Container(
-                padding: AppEdgeInsets.symmetric(
-                  vertical: AppSizes.sizeMedium,
-                ),
-                decoration: BoxDecoration(
-                  color: viewModel.selectedTabIndex == 1
-                      ? AppColors.primary
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(AppSizes.sizeLarge.w),
-                ),
-                child: Text(
-                  'Favorilerim',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: viewModel.selectedTabIndex == 1
-                        ? AppColors.textWhite
-                        : AppColors.textSecondary,
-                    fontSize: 14.sp,
-                    fontWeight: viewModel.selectedTabIndex == 1
-                        ? FontWeight.w600
-                        : FontWeight.w400,
-                  ),
-                ),
-              ),
-            ),
+        ),
+        SizedBox(width: 16.w),
+        Expanded(
+          child: ProfileStatTileWidget(
+            label: "TAKASLAR",
+            value: "12",
+            icon: Icons.swap_horiz_outlined,
           ),
-        ],
-      ),
+        ),
+        SizedBox(width: 16.w),
+        Expanded(
+          child: ProfileStatTileWidget(
+            label: "PUAN",
+            value: "4.8",
+            icon: Icons.star_outline,
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildBooksList(BuildContext context) {
+  Widget _buildTabContent(BuildContext context) {
     final books = viewModel.selectedTabIndex == 0
         ? viewModel.myBooks
         : viewModel.favoriteBooks;
 
-    if (viewModel.isLoading && books.isEmpty) {
-      return GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
+    if (books.isEmpty) {
+      return SliverToBoxAdapter(
+        child: ProfileEmptyStateWidget(
+          message: viewModel.selectedTabIndex == 0
+              ? "Henüz kitap paylaşmadın."
+              : "Henüz favori kitabın yok.",
+        ),
+      );
+    }
+
+    return SliverPadding(
+      padding: EdgeInsets.symmetric(horizontal: 24.w),
+      sliver: SliverGrid(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          childAspectRatio: 0.7,
-          crossAxisSpacing: AppSizes.sizeMedium.w,
-          mainAxisSpacing: AppSizes.sizeMedium.h,
+          mainAxisSpacing: 20.h,
+          crossAxisSpacing: 16.w,
+          childAspectRatio: 0.65,
         ),
-        itemCount: 4,
-        itemBuilder: (context, index) {
-          return BookCardShimmer();
-        },
-      );
-    }
-
-    if (books.isEmpty) {
-      return EmptyStateWidget.generic(
-        icon: viewModel.selectedTabIndex == 0
-            ? Icons.book_outlined
-            : Icons.favorite_border,
-        title: viewModel.selectedTabIndex == 0
-            ? 'Henüz kitap eklemediniz'
-            : 'Henüz favori kitabınız yok',
-        message: viewModel.selectedTabIndex == 0
-            ? 'İlk kitabınızı ekleyerek başlayın!'
-            : 'Beğendiğiniz kitapları favorilerinize ekleyin',
-      );
-    }
-
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 0.7,
-        crossAxisSpacing: AppSizes.sizeMedium.w,
-        mainAxisSpacing: AppSizes.sizeMedium.h,
-      ),
-      itemCount: books.length,
-      itemBuilder: (context, index) {
-        final book = books[index];
-        return BookCardWidget(
-          book: book,
-          onTap: () {
-            NavigationUtil.navigateToPage(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) => ProfileBookCardWidget(
+            book: books[index],
+            onTap: () => NavigationUtil.navigateToBookDetail(
               context,
-              NavigationUtil.bookDetailScreen,
-              arguments: book.id,
-            );
-          },
-        );
-      },
+              books[index].id ?? "",
+            ),
+          ),
+          childCount: books.length,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionList(BuildContext context) {
+    return Column(
+      children: [
+        ProfileActionTileWidget(
+          title: "Kütüphanem",
+          icon: Icons.bookmark_outline,
+          onTap: () {},
+        ),
+        ProfileActionTileWidget(
+          title: "Favorilerim",
+          icon: Icons.favorite_outline,
+          onTap: () {},
+        ),
+        ProfileActionTileWidget(
+          title: "Ayarlar",
+          icon: Icons.settings_outlined,
+          onTap: () {},
+        ),
+        ProfileActionTileWidget(
+          title: "Yardım ve Destek",
+          icon: Icons.help_outline,
+          onTap: () {},
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLogoutButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () => viewModel.signOut(context),
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(vertical: 20.h),
+        decoration: BoxDecoration(
+          color: AppColors.backgroundWhite,
+          border: Border.all(color: AppColors.errorColor, width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.errorColor.withOpacity(0.1),
+              offset: Offset(4.w, 4.h),
+              blurRadius: 0,
+            ),
+          ],
+        ),
+        child: Center(
+          child: Text(
+            "ÇIKIŞ YAP",
+            style: GoogleFonts.syne(
+              color: AppColors.errorColor,
+              fontWeight: FontWeight.w800,
+              fontSize: 14.sp,
+              letterSpacing: 1.5,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

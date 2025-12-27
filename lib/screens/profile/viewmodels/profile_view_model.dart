@@ -5,6 +5,7 @@ import '../../../base/services/favorites_service.dart';
 import '../../../domain/dtos/book_dto.dart';
 import '../../../domain/dtos/user_dto.dart';
 import '../../../utils/shared_preferences_util.dart';
+import '../../../utils/navigation_util.dart';
 import '../profile_service.dart';
 
 /// Profile ViewModel - Profile ekranının durum ve iş kuralları
@@ -120,6 +121,14 @@ class ProfileViewModel extends BaseViewModel {
       loadMyBooks(),
       loadFavoriteBooks(),
     ]);
+  }
+
+  /// Logout işlemi (Alias for view consistency)
+  Future<void> signOut(BuildContext context) async {
+    final success = await logout(context);
+    if (success && context.mounted) {
+      NavigationUtil.navigateToLogin(context);
+    }
   }
 
   /// Logout işlemi

@@ -37,6 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   kartal: ^4.2.0
   convex_bottom_bar: ^3.2.0
+  intl: ^0.19.0
   
   # State Management
   provider: ^6.1.1
@@ -59,6 +60,7 @@ dependencies:
   # UI/UX Enhancements
   shimmer: ^3.0.0  # Loading effects
   cached_network_image: ^3.3.0  # Image caching
+  google_fonts: ^6.3.3
 
 dev_dependencies:
   flutter_test:

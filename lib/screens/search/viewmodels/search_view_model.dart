@@ -45,6 +45,11 @@ class SearchViewModel extends BaseViewModel {
     });
   }
 
+  /// Arama yap (Alias for performSearch for view consistency)
+  Future<void> search(String query) async {
+    await performSearch();
+  }
+
   /// Arama işlemini gerçekleştir
   Future<void> _executeSearch(String query) async {
     isLoading = true;

@@ -1,145 +1,151 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-/// App Colors - Editorial & Refined Palette
-/// "Warm, sophisticated, and book-focused"
+/// App Colors - "Neo-Ethereal" Palette
+/// "Futuristic, deep, and luminous"
 class AppColors {
-  // Primary Palette (Editorial)
-  static const primary = Color(0xFF2C3E50); // Midnight Blue / Charcoal
-  static const primaryLight = Color(0xFF34495E);
-  static const primaryDark = Color(0xFF1A252F);
+  // Primary Palette (Deep Space)
+  static const primary = Color(0xFF0A0C10); // Deep Obsidian
+  static const primaryLight = Color(0xFF1A1D23);
+  static const primaryDark = Color(0xFF050608);
 
-  // Accent Palette (Warmth)
-  static const accent = Color(0xFFD35400); // Burnt Orange / Terracotta
-  static const accentLight = Color(0xFFE67E22);
-  static const accentSoft = Color(0xFFFAD7A0);
+  // Accent Palette (Quantum Lume)
+  static const accent = Color(0xFF6366F1); // Electric Indigo
+  static const accentLight = Color(0xFF818CF8);
+  static const accentCyan = Color(0xFF22D3EE); // Neon Cyan for secondary highlights
+  static const accentSoft = Color(0xFFC7D2FE);
 
-  // Secondary Colors
-  static const secondary = Color(0xFF16A085); // Muted Teal
-  static const secondaryLight = Color(0xFF1ABC9C);
+  // Secondary Palette (Stellar Mist)
+  static const secondary = Color(0xFF94A3B8); // Cool Slate
+  static const secondaryLight = Color(0xFFCBD5E1);
 
-  // Background Colors - Paper & Ink
-  static const backgroundLight = Color(0xFFF9F7F2); // Warm Cream / Paper
-  static const backgroundWhite = Color(0xFFFFFFFF);
-  static const backgroundDark = Color(0xFF121212);
-  static const cardBackground = Color(0xFFFFFFFF);
+  // Background Colors - Cinematic Depth
+  static const backgroundDark = Color(0xFF030406);
+  static const backgroundCanvas = Color(0xFF0A0C10);
+  static const cardBackground = Color(0xFF111418);
+  static const glassBackground = Color(0x1AFFFFFF); // 10% white for glass effect
 
   // Text Colors
-  static const textPrimary = Color(0xFF2C3E50); // Midnight Blue
-  static const textSecondary = Color(0xFF7F8C8D); // Slate Grey
-  static const textLight = Color(0xFF95A5A6);
+  static const textPrimary = Color(0xFFF8FAFC); // Off White
+  static const textSecondary = Color(0xFF94A3B8); // Muted Slate
+  static const textMuted = Color(0xFF64748B);
+  static const textAccent = accentCyan;
   static const textWhite = Color(0xFFFFFFFF);
-  // Legacy support for older code
-  static const textDark = textPrimary;
 
   // Neutral Colors
-  static const grey = Color(0xFFBDC3C7);
-  static const greyLight = Color(0xFFECF0F1);
-  static const greyDark = Color(0xFF7F8C8D);
-  static const divider = Color(0xFFE0E0E0);
+  static const grey = Color(0xFF334155);
+  static const greyLight = Color(0xFF475569);
+  static const greyDark = Color(0xFF1E293B);
+  static const divider = Color(0xFF1E293B);
 
   // Status Colors
-  static const errorColor = Color(0xFFC0392B); // Deep Red
-  static const errorLight = Color(0xFFF9EBEA);
-  static const successColor = Color(0xFF27AE60); // Forest Green
-  static const successLight = Color(0xFFE8F8F5);
-  static const warningColor = Color(0xFFF39C12);
-  static const infoColor = Color(0xFF2980B9);
-
-  // Shadows
-  static const shadowColor = Color(0x1A2C3E50); // Navy hint in shadow
+  static const errorColor = Color(0xFFEF4444); // Neon Rose
+  static const errorLight = Color(0xFFFFEBEE);
+  static const successColor = Color(0xFF10B981); // Emerald Glow
+  static const successLight = Color(0xFFECFDF5);
+  static const warningColor = Color(0xFFF59E0B);
+  static const infoColor = Color(0xFF3B82F6);
 
   // Overlay Colors
-  static const overlayLight = Color(0x80F9F7F2); // 50% opacity backgroundLight
-  static const overlayDark = Color(0x80121212);
+  static const overlayDark = Color(0xCC030406); // 80% opacity
+  static const glassBorder = Color(0x33FFFFFF); // 20% white border
+
+  // Shadows - Luminous & Deep
+  static const shadowColor = Color(0x4D000000); // 30% Black
+  static const glowColor = Color(0x336366F1); // 20% Accent Glow
 }
 
-/// App Gradients - Subtle & Atmospheric
+/// App Gradients - Ethereal & Cosmic
 class AppGradients {
-  static LinearGradient get primaryGradient => const LinearGradient(
+  static LinearGradient get cosmic => const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [AppColors.primary, AppColors.primaryLight],
+        colors: [Color(0xFF6366F1), Color(0xFF22D3EE)],
       );
 
-  static LinearGradient get accentGradient => const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [AppColors.accent, AppColors.accentLight],
-      );
-
-  static LinearGradient get paperGradient => const LinearGradient(
+  static LinearGradient get obsidian => const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [AppColors.backgroundLight, AppColors.backgroundWhite],
-        stops: [0.0, 1.0],
+        colors: [AppColors.primaryLight, AppColors.primary],
       );
 
-  // Legacy/Alias for compatibility with new design
-  static LinearGradient get backgroundGradient => paperGradient;
+  static LinearGradient get glass => LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Colors.white.withOpacity(0.12),
+          Colors.white.withOpacity(0.04),
+        ],
+      );
+
+  static LinearGradient get surface => LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          AppColors.cardBackground,
+          AppColors.primary,
+        ],
+      );
 }
 
-/// App Shadows - Soft & Diffused
+/// App Shadows - High-End Floating depth
 class AppShadows {
   static List<BoxShadow> get none => [];
 
-  static List<BoxShadow> get soft => [
+  static List<BoxShadow> get glow => [
         BoxShadow(
-          color: AppColors.shadowColor,
-          blurRadius: 10.r,
+          color: AppColors.accent.withOpacity(0.3),
+          blurRadius: 20.r,
           offset: Offset(0, 4.h),
           spreadRadius: -2,
         ),
       ];
 
+  static List<BoxShadow> get floating => [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.4),
+          blurRadius: 40.r,
+          offset: Offset(0, 24.h),
+          spreadRadius: -12,
+        ),
+      ];
+
   static List<BoxShadow> get card => [
         BoxShadow(
-          color: AppColors.shadowColor.withOpacity(0.08),
-          blurRadius: 16.r,
+          color: Colors.black.withOpacity(0.2),
+          blurRadius: 24.r,
           offset: Offset(0, 8.h),
           spreadRadius: 0,
         ),
       ];
 
-  // Alias for legacy code
-  static List<BoxShadow> get cardShadow => card;
-  static List<BoxShadow> get small => soft;
-  static List<BoxShadow> get large => floating;
-
-  static List<BoxShadow> get floating => [
+  static List<BoxShadow> get innerGlow => [
         BoxShadow(
-          color: AppColors.shadowColor.withOpacity(0.15),
-          blurRadius: 24.r,
-          offset: Offset(0, 12.h),
-          spreadRadius: 0,
-        ),
-      ];
-
-  static List<BoxShadow> get buttonShadow => [
-        BoxShadow(
-          color: AppColors.primary.withOpacity(0.3),
-          blurRadius: 12.r,
-          offset: Offset(0, 6.h),
+          color: Colors.white.withOpacity(0.05),
+          blurRadius: 1.r,
+          offset: const Offset(1, 1),
           spreadRadius: 0,
         ),
       ];
 }
 
-/// App Theme - Editorial Design System
+/// App Theme - "Neo-Ethereal" Design System
 class AppTheme {
-  static ThemeData get lightTheme {
-    return ThemeData.light().copyWith(
+  static ThemeData get darkTheme {
+    return ThemeData.dark().copyWith(
       useMaterial3: true,
-      scaffoldBackgroundColor: AppColors.backgroundLight,
-      primaryColor: AppColors.primary,
+      scaffoldBackgroundColor: AppColors.backgroundCanvas,
+      primaryColor: AppColors.accent,
 
       // Color Scheme
-      colorScheme: const ColorScheme.light(
-        primary: AppColors.primary,
-        secondary: AppColors.accent,
-        tertiary: AppColors.secondary,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: AppColors.accent,
+        brightness: Brightness.dark,
+        primary: AppColors.accent,
+        secondary: AppColors.accentCyan,
         surface: AppColors.cardBackground,
-        background: AppColors.backgroundLight,
+        background: AppColors.backgroundCanvas,
         error: AppColors.errorColor,
         onPrimary: AppColors.textWhite,
         onSecondary: AppColors.textWhite,
@@ -147,121 +153,119 @@ class AppTheme {
         onBackground: AppColors.textPrimary,
       ),
 
-      // Typography (Simulating Serif with Font Weights/Spacing if custom font not avail)
+      // Typography - High Personality Modernity
       textTheme: TextTheme(
-        displayLarge: TextStyle(
+        displayLarge: GoogleFonts.outfit(
+          color: AppColors.textPrimary,
+          fontSize: 40.sp,
+          fontWeight: FontWeight.w800,
+          letterSpacing: -1.5,
+          height: 1.1,
+        ),
+        displayMedium: GoogleFonts.outfit(
           color: AppColors.textPrimary,
           fontSize: 32.sp,
-          fontWeight: FontWeight.w800, // Bold serif feel
-          letterSpacing: -0.5,
-          height: 1.2,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -1,
         ),
-        displayMedium: TextStyle(
+        displaySmall: GoogleFonts.outfit(
           color: AppColors.textPrimary,
           fontSize: 24.sp,
           fontWeight: FontWeight.w700,
-          letterSpacing: -0.5,
-          height: 1.3,
         ),
-        bodyLarge: TextStyle(
+        headlineLarge: GoogleFonts.plusJakartaSans(
+          color: AppColors.textPrimary,
+          fontSize: 28.sp,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.5,
+        ),
+        bodyLarge: GoogleFonts.plusJakartaSans(
           color: AppColors.textPrimary,
           fontSize: 16.sp,
           fontWeight: FontWeight.w400,
           height: 1.5,
-          letterSpacing: 0.1,
         ),
-        bodyMedium: TextStyle(
+        bodyMedium: GoogleFonts.plusJakartaSans(
           color: AppColors.textSecondary,
           fontSize: 14.sp,
           fontWeight: FontWeight.w400,
           height: 1.5,
         ),
-      ),
-
-      // AppBar Theme
-      appBarTheme: AppBarTheme(
-        centerTitle: false, // Editorial align left often looks better
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        backgroundColor: AppColors.backgroundLight,
-        foregroundColor: AppColors.textPrimary,
-        iconTheme: const IconThemeData(color: AppColors.textPrimary),
-        titleTextStyle: TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: 24.sp,
-          fontWeight: FontWeight.w700,
-          letterSpacing: -0.5,
+        labelLarge: GoogleFonts.outfit(
+          color: AppColors.accentCyan,
+          fontSize: 14.sp,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 2,
         ),
       ),
 
-      // Card Theme
+      // AppBar Theme - Glassy & Floating
+      appBarTheme: AppBarTheme(
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        foregroundColor: AppColors.textPrimary,
+        iconTheme: const IconThemeData(color: AppColors.textPrimary, size: 24),
+        titleTextStyle: GoogleFonts.outfit(
+          color: AppColors.textPrimary,
+          fontSize: 18.sp,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0,
+        ),
+      ),
+
+      // Card Theme - Glassmorphism Style
       cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.r), // More structured
-          side: const BorderSide(color: Color(0xFFEEEEEE), width: 1),
+          borderRadius: BorderRadius.circular(24.r),
+          side: BorderSide(color: Colors.white.withOpacity(0.08), width: 1),
         ),
         color: AppColors.cardBackground,
         margin: EdgeInsets.zero,
       ),
 
-      // Input Decoration
+      // Input Decoration - Sleek & Modern
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.backgroundWhite,
-        hintStyle: TextStyle(color: AppColors.textLight, fontSize: 14.sp),
+        fillColor: AppColors.primaryLight,
+        hintStyle: GoogleFonts.plusJakartaSans(
+          color: AppColors.textMuted,
+          fontSize: 14.sp,
+        ),
         contentPadding: EdgeInsets.symmetric(
-          horizontal: 16.w,
-          vertical: 16.h,
+          horizontal: 24.w,
+          vertical: 20.h,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.r), // Standard rounded
-          borderSide: BorderSide(color: AppColors.grey.withOpacity(0.5)),
+          borderRadius: BorderRadius.circular(16.r),
+          borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.r),
-          borderSide: BorderSide(color: AppColors.grey.withOpacity(0.3)),
+          borderRadius: BorderRadius.circular(16.r),
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.05), width: 1),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.r),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+          borderRadius: BorderRadius.circular(16.r),
+          borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
         ),
-      ),
-
-      // Button Theme
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          elevation: 0,
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.textWhite,
-          padding: EdgeInsets.symmetric(
-            horizontal: 24.w,
-            vertical: 16.h,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius:
-                BorderRadius.circular(8.r), // Not pill, slightly rounded
-          ),
-          textStyle: TextStyle(
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.5,
-          ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16.r),
+          borderSide: const BorderSide(color: AppColors.errorColor, width: 1),
         ),
-      ),
-
-      // Icon Theme
-      iconTheme: const IconThemeData(
-        color: AppColors.textPrimary,
-        size: 24,
       ),
 
       // Divider Theme
-      dividerTheme: const DividerThemeData(
+      dividerTheme: DividerThemeData(
         color: AppColors.divider,
         thickness: 1,
-        space: 1,
+        space: 24.h,
       ),
     );
   }
+
+  // Maintaining lightTheme for fallback, but mapping it to a "Clean Modern" style
+  static ThemeData get lightTheme => darkTheme; // For this futuristic pivot, we default to dark
 }
+
+

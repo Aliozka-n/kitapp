@@ -4,7 +4,6 @@ import 'search_service.dart';
 import 'viewmodels/search_view_model.dart';
 import 'views/search_view.dart';
 
-/// Search Screen - Arama ekranı wrapper
 class SearchScreen extends StatelessWidget {
   const SearchScreen({super.key});
 
@@ -18,4 +17,3 @@ class SearchScreen extends StatelessWidget {
     );
   }
 }
-

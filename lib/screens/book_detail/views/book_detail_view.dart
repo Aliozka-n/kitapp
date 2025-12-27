@@ -1,19 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:share_plus/share_plus.dart';
-import '../../../base/constants/app_constants.dart';
-import '../../../base/constants/app_size.dart';
-import '../../../base/constants/app_edge_insets.dart';
-import '../../../base/constants/app_texts.dart';
-import '../../../common_widgets/button_widget.dart';
-import '../../../common_widgets/cached_network_image_widget.dart';
-import '../../../common_widgets/error_state_widget.dart';
-import '../../../common_widgets/loading_widget.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../domain/dtos/book_dto.dart';
+import '../../../base/constants/app_constants.dart';
+import '../../../common_widgets/button_widget.dart';
 import '../../../utils/navigation_util.dart';
 import '../viewmodels/book_detail_view_model.dart';
 
-/// Book Detail View - Editorial Design
 class BookDetailView extends StatelessWidget {
   final BookDetailViewModel viewModel;
 
@@ -25,349 +19,344 @@ class BookDetailView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final book = viewModel.book;
-
-    if (book == null) {
-      return Scaffold(
-        backgroundColor: AppColors.backgroundLight,
-        appBar: AppBar(backgroundColor: Colors.transparent),
-        body: viewModel.errorMessage != null
-            ? ErrorStateWidget.generic(
-                title: 'Error',
-                message: viewModel.errorMessage!,
-                onRetry: () => viewModel.loadBookDetail(),
-              )
-            : LoadingWidget(
-                size: 40.h,
-                message: 'Loading details...',
-              ),
-      );
-    }
+    if (book == null) return const SizedBox.shrink();
 
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       body: CustomScrollView(
         slivers: [
-          // 1. Immersive Header
-          SliverAppBar(
-            expandedHeight: 400.h,
-            pinned: true,
-            stretch: true,
-            backgroundColor: AppColors.backgroundLight,
-            leading: IconButton(
-              icon: Container(
-                padding: EdgeInsets.all(8.w),
-                decoration: BoxDecoration(
-                  color: AppColors.backgroundLight.withOpacity(0.8),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.arrow_back, color: AppColors.textPrimary),
-              ),
-              onPressed: () => Navigator.pop(context),
-            ),
-            actions: [
-              IconButton(
-                icon: Container(
-                  padding: EdgeInsets.all(8.w),
-                  decoration: BoxDecoration(
-                    color: AppColors.backgroundLight.withOpacity(0.8),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    viewModel.isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: viewModel.isFavorite ? AppColors.errorColor : AppColors.textPrimary,
-                  ),
-                ),
-                onPressed: () => _handleToggleFavorite(context),
-              ),
-              SizedBox(width: 8.w),
-              IconButton(
-                icon: Container(
-                  padding: EdgeInsets.all(8.w),
-                  decoration: BoxDecoration(
-                    color: AppColors.backgroundLight.withOpacity(0.8),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(Icons.share_outlined, color: AppColors.textPrimary),
-                ),
-                onPressed: () => _handleShare(context, book),
-              ),
-              SizedBox(width: 16.w),
-            ],
-            flexibleSpace: FlexibleSpaceBar(
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  book.imageUrl != null && book.imageUrl!.isNotEmpty
-                      ? CachedNetworkImageWidget(
-                          imageUrl: book.imageUrl!,
-                          width: double.infinity,
-                          height: double.infinity,
-                          fit: BoxFit.cover,
-                          placeholderIcon: Icons.book,
-                        )
-                      : _buildPlaceholderImage(),
-                  // Gradient Overlay for Text Readability
-                  Positioned.fill(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            AppColors.backgroundLight.withOpacity(0.2),
-                            AppColors.backgroundLight,
-                          ],
-                          stops: const [0.6, 0.8, 1.0],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // 2. Editorial Content
+          _buildSliverAppBar(context, book),
           SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title & Author
-                  Text(
-                    book.name ?? 'Untitled',
-                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                      fontSize: 32.sp,
-                      height: 1.1,
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
-                  Text(
-                    book.writer ?? 'Unknown Author',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: AppColors.textSecondary,
-                      fontFamily: 'Sans', // Contrast font
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-
-                  SizedBox(height: 24.h),
-
-                  // Metadata Chips
-                  Wrap(
-                    spacing: 8.w,
-                    runSpacing: 8.h,
-                    children: [
-                      if (book.language != null)
-                        _buildChip(context, book.language!.toUpperCase()),
-                      if (book.type != null)
-                        _buildChip(context, book.type!, isPrimary: true),
-                    ],
-                  ),
-
                   SizedBox(height: 32.h),
-
-                  // Description
-                  Text(
-                    "Description",
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+                  _buildBookHeader(book),
+                  SizedBox(height: 32.h),
+                  _buildSectionTitle("ÖZET"),
                   SizedBox(height: 12.h),
-                  Text(
-                    book.description ?? 'No description available.',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      height: 1.6,
-                      color: AppColors.textPrimary.withOpacity(0.8),
-                    ),
-                  ),
-
+                  _buildDescription(book),
                   SizedBox(height: 40.h),
-
-                  // Owner Profile Card
-                  Container(
-                    padding: EdgeInsets.all(16.w),
-                    decoration: BoxDecoration(
-                      color: AppColors.backgroundWhite,
-                      borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(color: AppColors.divider),
-                    ),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 24.r,
-                          backgroundColor: AppColors.primaryLight,
-                          child: Text(
-                            (viewModel.ownerName?.isNotEmpty == true
-                                    ? viewModel.ownerName![0]
-                                    : 'U')
-                                .toUpperCase(),
-                            style: TextStyle(
-                              color: AppColors.textWhite,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 16.w),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              AppTexts.owner,
-                              style: TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 12.sp,
-                              ),
-                            ),
-                            Text(
-                              viewModel.ownerName ?? 'Unknown User',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16.sp,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  SizedBox(height: 100.h), // Space for bottom bar
+                  _buildMetadata(book),
+                  SizedBox(height: 40.h),
+                  _buildOwnerCard(context),
+                  SizedBox(height: 120.h),
                 ],
               ),
             ),
           ),
         ],
       ),
-      
-      // Bottom Action Bar
-      bottomSheet: Container(
-        color: AppColors.backgroundLight,
-        padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 32.h),
-        child: viewModel.isMyBook
-            ? Row(
-                children: [
-                  Expanded(
-                    child: ButtonWidget(
-                      textTitle: 'Edit',
-                      onTap: () => _handleEditBook(context),
-                      isOutlined: true,
-                      icon: Icon(Icons.edit_outlined, size: 20.sp, color: AppColors.primary),
-                      color: AppColors.primary,
-                      textColor: AppColors.primary,
-                    ),
-                  ),
-                  SizedBox(width: 16.w),
-                  Expanded(
-                    child: ButtonWidget(
-                      textTitle: 'Delete',
-                      onTap: () => _handleDeleteBook(context),
-                      color: AppColors.errorColor,
-                      icon: Icon(Icons.delete_outline, size: 20.sp, color: AppColors.textWhite),
-                    ),
-                  ),
-                ],
+      bottomSheet: _buildBottomActions(context),
+    );
+  }
+
+  Widget _buildSliverAppBar(BuildContext context, BookResponse book) {
+    return SliverAppBar(
+      expandedHeight: 450.h,
+      pinned: true,
+      backgroundColor: AppColors.primary,
+      iconTheme: const IconThemeData(color: AppColors.textWhite),
+      flexibleSpace: FlexibleSpaceBar(
+        background: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (book.imageUrl != null)
+              CachedNetworkImage(
+                imageUrl: book.imageUrl!,
+                fit: BoxFit.cover,
               )
-            : ButtonWidget(
-                textTitle: AppTexts.sendMessage,
-                onTap: () => _handleSendMessage(context),
-                icon: Icon(Icons.mail_outline, color: AppColors.textWhite),
+            else
+              Container(
+                color: AppColors.secondary,
+                child: const Icon(Icons.book, size: 100, color: AppColors.primary),
               ),
+            // Gradient Overlay
+            const DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.transparent, AppColors.primaryDark],
+                  stops: [0.6, 1.0],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        IconButton(
+          onPressed: () => viewModel.toggleFavorite(),
+          icon: Icon(
+            viewModel.isFavorite ? Icons.favorite : Icons.favorite_border,
+            color: viewModel.isFavorite ? AppColors.accent : AppColors.textWhite,
+          ),
+        ),
+        SizedBox(width: 8.w),
+      ],
+    );
+  }
+
+  Widget _buildBookHeader(BookResponse book) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+          decoration: BoxDecoration(
+            color: AppColors.accent,
+            border: Border.all(color: AppColors.primary, width: 1.5),
+          ),
+          child: Text(
+            book.type?.toUpperCase() ?? "TÜR BELİRTİLMEMİŞ",
+            style: GoogleFonts.syne(
+              color: AppColors.textWhite,
+              fontSize: 10.sp,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1,
+            ),
+          ),
+        ),
+        SizedBox(height: 16.h),
+        Text(
+          book.name ?? "İsimsiz Kitap",
+          style: GoogleFonts.cormorantGaramond(
+            fontSize: 40.sp,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+            height: 1.0,
+          ),
+        ),
+        SizedBox(height: 8.h),
+        Text(
+          "Yazan: ${book.writer ?? 'Bilinmiyor'}",
+          style: GoogleFonts.syne(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textSecondary,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: GoogleFonts.syne(
+        fontSize: 14.sp,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 2,
+        color: AppColors.primary,
       ),
     );
   }
 
-  Widget _buildChip(BuildContext context, String label, {bool isPrimary = false}) {
+  Widget _buildDescription(BookResponse book) {
+    return Text(
+      book.description ?? "Bu kitap için henüz bir açıklama girilmemiş.",
+      style: GoogleFonts.instrumentSans(
+        fontSize: 16.sp,
+        height: 1.7,
+        color: AppColors.textPrimary.withOpacity(0.8),
+      ),
+    );
+  }
+
+  Widget _buildMetadata(BookResponse book) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+      padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
-        color: isPrimary ? AppColors.accent.withOpacity(0.1) : Colors.transparent,
-        border: Border.all(
-          color: isPrimary ? AppColors.accent : AppColors.divider,
-        ),
-        borderRadius: BorderRadius.circular(20.r),
+        color: AppColors.backgroundWhite,
+        border: Border.all(color: AppColors.primary, width: 1.5),
+        boxShadow: AppShadows.sharp,
       ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: isPrimary ? AppColors.accent : AppColors.textSecondary,
-          fontSize: 12.sp,
-          fontWeight: FontWeight.w600,
-        ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildMetaItem("DİL", book.language ?? "TR"),
+          _buildVerticalDivider(),
+          _buildMetaItem("DURUM", book.status ?? "MÜSAİT"),
+          _buildVerticalDivider(),
+          _buildMetaItem("TARİH", book.createdAt != null ? "${book.createdAt!.day}.${book.createdAt!.month}.${book.createdAt!.year}" : "-"),
+        ],
       ),
     );
   }
 
-  Widget _buildPlaceholderImage() {
+  Widget _buildMetaItem(String label, String value) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.syne(
+            fontSize: 10.sp,
+            fontWeight: FontWeight.w800,
+            color: AppColors.textLight,
+          ),
+        ),
+        SizedBox(height: 4.h),
+        Text(
+          value.toUpperCase(),
+          style: GoogleFonts.syne(
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w700,
+            color: AppColors.primary,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildVerticalDivider() {
     return Container(
-      color: AppColors.greyLight,
-      child: Center(
-        child: Icon(
-          Icons.auto_stories,
-          size: 80.sp,
-          color: AppColors.grey,
-        ),
+      width: 1.5,
+      height: 30.h,
+      color: AppColors.primary.withOpacity(0.2),
+    );
+  }
+
+  Widget _buildOwnerCard(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        border: Border.all(color: AppColors.primary, width: 2),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 50.w,
+            height: 50.w,
+            decoration: BoxDecoration(
+              color: AppColors.accent,
+              border: Border.all(color: AppColors.textWhite, width: 2),
+            ),
+            child: const Icon(Icons.person, color: AppColors.textWhite),
+          ),
+          SizedBox(width: 16.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "KİTAP SAHİBİ",
+                  style: GoogleFonts.syne(
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.accent,
+                    letterSpacing: 1,
+                  ),
+                ),
+                Text(
+                  viewModel.ownerName ?? "Kullanıcı",
+                  style: GoogleFonts.syne(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textWhite,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (!viewModel.isMyBook)
+            IconButton(
+              onPressed: () {
+                NavigationUtil.navigateToChatDetail(
+                  context,
+                  viewModel.ownerId ?? "",
+                  viewModel.ownerName ?? "Kullanıcı",
+                );
+              },
+              icon: const Icon(Icons.chat_bubble_outline, color: AppColors.textWhite),
+            ),
+        ],
       ),
     );
   }
 
-  // Handlers (kept same logic, updated UI feedbacks)
-  void _handleSendMessage(BuildContext context) {
-    if (viewModel.ownerId != null) {
-      NavigationUtil.navigateToChatDetail(
-        context,
-        receiverId: viewModel.ownerId!,
-        receiverName: viewModel.ownerName,
+  Widget _buildBottomActions(BuildContext context) {
+    if (viewModel.isMyBook) {
+      return Container(
+        padding: EdgeInsets.all(24.w),
+        decoration: BoxDecoration(
+          color: AppColors.backgroundWhite,
+          border: const Border(top: BorderSide(color: AppColors.primary, width: 2)),
+        ),
+        child: ButtonWidget(
+          text: "KİTABI SİL",
+          backgroundColor: AppColors.errorColor,
+          onPressed: () async {
+            final confirmed = await _showDeleteConfirmation(context);
+            if (confirmed == true) {
+              final success = await viewModel.deleteBook();
+              if (success && context.mounted) {
+                NavigationUtil.pop(context);
+              }
+            }
+          },
+        ),
       );
     }
-  }
 
-  void _handleShare(BuildContext context, BookResponse book) {
-    Share.share(
-      'Check out "${book.name}" by ${book.writer} on KitApp!',
-      subject: book.name,
-    );
-  }
-
-  Future<void> _handleToggleFavorite(BuildContext context) async {
-    await viewModel.toggleFavorite();
-    // Feedback can be handled by ViewModel state or simple snackbar
-  }
-
-  Future<void> _handleEditBook(BuildContext context) async {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Edit feature coming soon')),
-    );
-  }
-
-  Future<void> _handleDeleteBook(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Book'),
-        content: const Text('Are you sure you want to delete this book?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+    return Container(
+      padding: EdgeInsets.all(24.w),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundWhite,
+        border: const Border(top: BorderSide(color: AppColors.primary, width: 2)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: ButtonWidget(
+              text: "MESAJ GÖNDER",
+              onPressed: () => NavigationUtil.navigateToChatDetail(
+                context,
+                viewModel.ownerId ?? "",
+                viewModel.ownerName ?? "Kullanıcı",
+              ),
+            ),
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.errorColor),
-            child: const Text('Delete'),
+          SizedBox(width: 16.w),
+          Container(
+            width: 56.h,
+            height: 56.h,
+            decoration: BoxDecoration(
+              color: AppColors.backgroundLight,
+              border: Border.all(color: AppColors.primary, width: 2),
+            ),
+            child: IconButton(
+              onPressed: () {}, // Share logic
+              icon: const Icon(Icons.share_outlined, color: AppColors.primary),
+            ),
           ),
         ],
       ),
     );
+  }
 
-    if (confirmed == true && context.mounted) {
-      final success = await viewModel.deleteBook();
-      if (success && context.mounted) {
-        Navigator.pop(context);
-      }
-    }
+  Future<bool?> _showDeleteConfirmation(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.backgroundLight,
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero, side: BorderSide(color: AppColors.primary, width: 2)),
+        title: Text("EMİN MİSİN?", style: GoogleFonts.syne(fontWeight: FontWeight.w800)),
+        content: Text("Bu kitabı kütüphanenden kalıcı olarak silmek istediğine emin misin?", style: GoogleFonts.instrumentSans()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text("İPTAL", style: GoogleFonts.syne(color: AppColors.textSecondary, fontWeight: FontWeight.w700)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text("EVET, SİL", style: GoogleFonts.syne(color: AppColors.errorColor, fontWeight: FontWeight.w800)),
+          ),
+        ],
+      ),
+    );
   }
 }

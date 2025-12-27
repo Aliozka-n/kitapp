@@ -1,88 +1,101 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../base/constants/app_constants.dart';
-import '../base/constants/app_size.dart';
 
-/// Text Field Widget - Theme Aware
 class TextFieldWidget extends StatelessWidget {
-  final String? textTitle;
-  final TextEditingController? textController;
-  final String? Function(String?)? validator;
-  final void Function(String?)? onSaved;
-  final void Function(String)? onChanged;
-  final IconData? textIcon;
-  final bool obscureText;
-  final int? maxLength;
-  final TextInputType keyboardType;
+  final TextEditingController? controller;
+  final String label;
   final String? hintText;
-  final bool enabled;
-  final int? maxLines;
-  final Widget? suffixIcon;
+  final bool obscureText;
+  final TextInputType keyboardType;
+  final String? Function(String?)? validator;
   final Widget? prefixIcon;
-  final FocusNode? focusNode;
+  final Widget? suffixIcon;
+  final void Function(String)? onChanged;
+  final bool readOnly;
+  final int? maxLines;
 
   const TextFieldWidget({
-    Key? key,
-    this.textTitle,
-    this.textController,
-    this.validator,
-    this.onSaved,
-    this.onChanged,
-    this.textIcon,
-    this.obscureText = false,
-    this.maxLength,
-    this.keyboardType = TextInputType.text,
+    super.key,
+    this.controller,
+    required this.label,
     this.hintText,
-    this.enabled = true,
-    this.maxLines = 1,
-    this.suffixIcon,
+    this.obscureText = false,
+    this.keyboardType = TextInputType.text,
+    this.validator,
     this.prefixIcon,
-    this.focusNode,
-  }) : super(key: key);
+    this.suffixIcon,
+    this.onChanged,
+    this.readOnly = false,
+    this.maxLines = 1,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (textTitle != null && textTitle!.isNotEmpty) ...[
-          Text(
-            textTitle!,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
-            ),
+        Text(
+          label.toUpperCase(),
+          style: GoogleFonts.syne(
+            fontSize: 12.sp,
+            fontWeight: FontWeight.w800,
+            color: AppColors.primary,
+            letterSpacing: 1.2,
           ),
-          SizedBox(height: 8.h),
-        ],
-        TextFormField(
-          controller: textController,
-          validator: validator,
-          onSaved: onSaved,
-          onChanged: onChanged,
-          obscureText: obscureText,
-          maxLength: maxLength,
-          keyboardType: keyboardType,
-          enabled: enabled,
-          maxLines: obscureText ? 1 : maxLines,
-          focusNode: focusNode,
-          style: Theme.of(context).textTheme.bodyLarge,
-          decoration: InputDecoration(
-            hintText: hintText,
-            prefixIcon: prefixIcon ??
-                (textIcon != null
-                    ? Icon(
-                        textIcon,
-                        color: AppColors.textSecondary,
-                        size: 20.sp,
-                      )
-                    : null),
-            suffixIcon: suffixIcon,
-            counterText: '',
-            // Theme data will handle borders and fill
+        ),
+        SizedBox(height: 8.h),
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.backgroundWhite,
+            border: Border.all(color: AppColors.primary, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.05),
+                offset: const Offset(4, 4),
+                blurRadius: 0,
+              ),
+            ],
+          ),
+          child: TextFormField(
+            controller: controller,
+            obscureText: obscureText,
+            keyboardType: keyboardType,
+            validator: validator,
+            onChanged: onChanged,
+            readOnly: readOnly,
+            maxLines: maxLines,
+            cursorColor: AppColors.accent,
+            style: GoogleFonts.instrumentSans(
+              fontSize: 16.sp,
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w500,
+            ),
+            decoration: InputDecoration(
+              hintText: hintText,
+              hintStyle: GoogleFonts.instrumentSans(
+                color: AppColors.textLight,
+                fontSize: 14.sp,
+              ),
+              prefixIcon: prefixIcon,
+              suffixIcon: suffixIcon,
+              filled: true,
+              fillColor: Colors.transparent,
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              errorBorder: InputBorder.none,
+              disabledBorder: InputBorder.none,
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 16.w,
+                vertical: 16.h,
+              ),
+            ),
           ),
         ),
       ],
     );
   }
 }
+

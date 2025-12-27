@@ -17,10 +17,22 @@ abstract class BaseViewModel extends ChangeNotifier {
 
   void load() async {
     isLoading = true;
-    _initState = init();
-    await _initState;
-    _isInitialized = true;
-    isLoading = false;
+    try {
+      _initState = init();
+      await _initState;
+    } catch (e, stackTrace) {
+      // Hata olsa bile initialized olarak işaretle ki ekran açılabilsin
+      // Hata ViewModel'deki errorMessage ile gösterilebilir
+      if (kDebugMode) {
+        // ignore: avoid_print
+        print('BaseViewModel load error - ${runtimeType}: $e');
+        // ignore: avoid_print
+        print('Stack trace: $stackTrace');
+      }
+    } finally {
+      _isInitialized = true;
+      isLoading = false;
+    }
   }
 
   // Getters
@@ -46,4 +58,3 @@ abstract class BaseViewModel extends ChangeNotifier {
     super.dispose();
   }
 }
-

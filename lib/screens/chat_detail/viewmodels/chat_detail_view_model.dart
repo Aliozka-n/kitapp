@@ -23,6 +23,7 @@ class ChatDetailViewModel extends BaseViewModel {
   String? get errorMessage => _errorMessage;
   String? get receiverEmail => _receiverEmail;
   bool get hasSwapProposal => false; // TODO: Implement swap proposal check
+  String? get currentUserId => Supabase.instance.client.auth.currentUser?.id;
 
   // Constructor
   ChatDetailViewModel({
@@ -35,6 +36,32 @@ class ChatDetailViewModel extends BaseViewModel {
   FutureOr<void> init() async {
     await loadMessages();
     await loadReceiverInfo();
+  }
+
+  /// Ekran ilk açıldığında ve yeni mesaj eklendiğinde listeyi en alta kaydır.
+  /// `ListView(reverse: false)` için en alt = maxScrollExtent.
+  void scrollToBottom({bool animated = true}) {
+    void tryScroll(int attempt) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!scrollController.hasClients) {
+          if (attempt < 2) tryScroll(attempt + 1);
+          return;
+        }
+
+        final target = scrollController.position.maxScrollExtent;
+        if (animated) {
+          scrollController.animateTo(
+            target,
+            duration: const Duration(milliseconds: 280),
+            curve: Curves.easeOutCubic,
+          );
+        } else {
+          scrollController.jumpTo(target);
+        }
+      });
+    }
+
+    tryScroll(0);
   }
 
   /// Messages yükle
@@ -51,7 +78,7 @@ class ChatDetailViewModel extends BaseViewModel {
         reloadState();
 
         // Mesajlar yüklendikten sonra en alta scroll et
-        _scrollToBottom();
+        scrollToBottom(animated: false);
       } else {
         _errorMessage = response.message ?? 'Mesajlar yüklenemedi';
         reloadState();
@@ -105,7 +132,7 @@ class ChatDetailViewModel extends BaseViewModel {
     if (!isDisposed) {
       notifyListeners();
     }
-    _scrollToBottom();
+    scrollToBottom(animated: true);
 
     _errorMessage = null;
     isLoading = true;
@@ -135,9 +162,7 @@ class ChatDetailViewModel extends BaseViewModel {
           notifyListeners();
         }
         // Scroll işlemini biraz geciktir
-        Future.delayed(const Duration(milliseconds: 200), () {
-          _scrollToBottom();
-        });
+        scrollToBottom(animated: true);
         return true;
       } else {
         // Hata durumunda optimistik mesajı kaldır - yeni liste referansı oluştur
@@ -174,33 +199,6 @@ class ChatDetailViewModel extends BaseViewModel {
       loadMessages(),
       loadReceiverInfo(),
     ]);
-  }
-
-  /// ListView'ı en alta scroll et
-  void _scrollToBottom() {
-    // Widget build edildikten sonra scroll et
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(const Duration(milliseconds: 100), () {
-        if (scrollController.hasClients) {
-          if (scrollController.position.maxScrollExtent > 0) {
-            scrollController.animateTo(
-              scrollController.position.maxScrollExtent,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOut,
-            );
-          } else {
-            // Eğer maxScrollExtent 0 ise, bir sonraki frame'de tekrar dene
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (scrollController.hasClients &&
-                  scrollController.position.maxScrollExtent > 0) {
-                scrollController
-                    .jumpTo(scrollController.position.maxScrollExtent);
-              }
-            });
-          }
-        }
-      });
-    });
   }
 
   @override

@@ -22,6 +22,27 @@ class MessagesViewModel extends BaseViewModel {
   String? get errorMessage => _errorMessage;
   String get searchQuery => _searchQuery;
 
+  String? get _currentUserId => Supabase.instance.client.auth.currentUser?.id;
+
+  /// Konuşmadaki diğer kullanıcının ID'si
+  String? otherUserIdOf(MessageResponse message) {
+    final currentUserId = _currentUserId;
+    if (currentUserId == null) return null;
+    return message.senderId == currentUserId ? message.receiverId : message.senderId;
+  }
+
+  /// Konuşmadaki diğer kullanıcının adı (cache -> DTO fallback)
+  String otherUserNameOf(MessageResponse message) {
+    final otherUserId = otherUserIdOf(message);
+    final cached = otherUserId != null ? _userNamesCache[otherUserId] : null;
+    if (cached != null && cached.trim().isNotEmpty) return cached;
+
+    final dtoName = message.userName;
+    if (dtoName != null && dtoName.trim().isNotEmpty) return dtoName;
+
+    return 'Kullanıcı';
+  }
+
   // Constructor
   MessagesViewModel({required this.service});
 
@@ -115,7 +136,7 @@ class MessagesViewModel extends BaseViewModel {
 
     // Kullanıcı adı veya son mesaj içinde arama yap
     return groupedMessages.where((message) {
-      final userName = (message.userName ?? '').toLowerCase();
+      final userName = otherUserNameOf(message).toLowerCase();
       final lastMessage = (message.lastMessage ?? '').toLowerCase();
       return userName.contains(_searchQuery) ||
           lastMessage.contains(_searchQuery);
@@ -124,7 +145,7 @@ class MessagesViewModel extends BaseViewModel {
 
   /// Mesajları kullanıcı bazında grupla ve son mesajı al
   List<MessageResponse> _getGroupedMessages() {
-    final currentUserId = Supabase.instance.client.auth.currentUser?.id;
+    final currentUserId = _currentUserId;
     if (currentUserId == null) return [];
 
     // Kullanıcı ID'sine göre mesajları grupla
@@ -132,9 +153,7 @@ class MessagesViewModel extends BaseViewModel {
 
     for (final message in _allMessages) {
       // Diğer kullanıcının ID'sini bul
-      final otherUserId = message.senderId == currentUserId
-          ? message.receiverId
-          : message.senderId;
+      final otherUserId = otherUserIdOf(message);
 
       if (otherUserId == null) continue;
 

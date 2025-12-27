@@ -1,119 +1,98 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../base/constants/app_constants.dart';
-import '../base/constants/app_size.dart';
 
-/// Button Widget - Theme Aware & Minimalist
 class ButtonWidget extends StatelessWidget {
-  final String textTitle;
-  final VoidCallback? onTap;
-  final bool enabled;
-  final Color? color;
-  final Color? textColor;
-  final double? height;
-  final double? width;
-  final Widget? icon;
+  final String text;
+  final VoidCallback? onPressed;
   final bool isLoading;
-  final bool isOutlined;
+  final Color? backgroundColor;
+  final Color? textColor;
+  final bool isSecondary;
 
   const ButtonWidget({
-    Key? key,
-    required this.textTitle,
-    this.onTap,
-    this.enabled = true,
-    this.color,
-    this.textColor,
-    this.height,
-    this.width,
-    this.icon,
+    super.key,
+    required this.text,
+    this.onPressed,
     this.isLoading = false,
-    this.isOutlined = false,
-  }) : super(key: key);
+    this.backgroundColor,
+    this.textColor,
+    this.isSecondary = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final buttonColor = color ?? theme.primaryColor;
-    final buttonTextColor = textColor ?? theme.colorScheme.onPrimary;
-    final isButtonEnabled = enabled && !isLoading;
+    final effectiveBackgroundColor = isSecondary 
+        ? AppColors.backgroundLight 
+        : (backgroundColor ?? AppColors.primary);
+    
+    final effectiveTextColor = isSecondary 
+        ? AppColors.primary 
+        : (textColor ?? AppColors.textWhite);
 
-    return SizedBox(
-      height: height ?? 56.h, // Taller, more clickable
-      width: width,
-      child: isOutlined
-          ? OutlinedButton(
-              onPressed: isButtonEnabled ? onTap : null,
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(
-                  color: isButtonEnabled ? buttonColor : AppColors.grey,
-                  width: 1.5,
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: isLoading ? null : onPressed,
+        child: IntrinsicHeight(
+          child: Stack(
+            children: [
+              // Brutalist shadow offset
+              if (onPressed != null && !isLoading)
+                Positioned(
+                  top: 4.h,
+                  left: 4.w,
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.accent,
+                      border: Border.all(color: AppColors.primary, width: 2),
+                    ),
+                  ),
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.r),
+              // Main button body
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 100),
+                margin: EdgeInsets.only(
+                  bottom: (onPressed != null && !isLoading) ? 4.h : 0,
+                  right: (onPressed != null && !isLoading) ? 4.w : 0,
                 ),
-                foregroundColor: buttonColor,
+                height: 56.h,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: effectiveBackgroundColor,
+                  border: Border.all(
+                    color: AppColors.primary, 
+                    width: 2,
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: isLoading
+                    ? SizedBox(
+                        height: 24.h,
+                        width: 24.h,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(effectiveTextColor),
+                        ),
+                      )
+                    : Text(
+                        text.toUpperCase(),
+                        style: GoogleFonts.syne(
+                          color: effectiveTextColor,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
               ),
-              child: _buildButtonContent(buttonColor),
-            )
-          : ElevatedButton(
-              onPressed: isButtonEnabled ? onTap : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isButtonEnabled ? buttonColor : AppColors.greyLight,
-                foregroundColor: buttonTextColor,
-                elevation: 0, // Flat design
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                shadowColor: Colors.transparent,
-              ),
-              child: _buildButtonContent(buttonTextColor),
-            ),
-    );
-  }
-
-  Widget _buildButtonContent(Color contentColor) {
-    if (isLoading) {
-      return SizedBox(
-        height: 24.h,
-        width: 24.w,
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          valueColor: AlwaysStoppedAnimation<Color>(contentColor),
+            ],
+          ),
         ),
-      );
-    }
-
-    if (icon != null) {
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          IconTheme(
-            data: IconThemeData(color: contentColor, size: 20.sp),
-            child: icon!,
-          ),
-          SizedBox(width: 8.w),
-          Text(
-            textTitle,
-            style: TextStyle(
-              color: contentColor,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ],
-      );
-    }
-
-    return Text(
-      textTitle,
-      style: TextStyle(
-        color: contentColor,
-        fontSize: 16.sp,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 0.5,
       ),
     );
   }
 }
+

@@ -1,190 +1,272 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../base/constants/app_constants.dart';
-import '../../../base/constants/app_size.dart';
-import '../../../base/constants/app_edge_insets.dart';
-import '../../../base/constants/app_texts.dart';
 import '../../../common_widgets/text_field_widget.dart';
-import '../../../common_widgets/button_widget.dart';
-import '../../../common_widgets/image_picker_widget.dart';
-import '../../../utils/validators_util.dart';
-import '../../../utils/navigation_util.dart';
-import '../../../common_widgets/alert_dialog_widget.dart';
 import '../viewmodels/edit_profile_view_model.dart';
 
-/// Edit Profile View - Profil düzenleme ekranı
 class EditProfileView extends StatelessWidget {
   final EditProfileViewModel viewModel;
 
   const EditProfileView({
-    Key? key,
+    super.key,
     required this.viewModel,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
-    final user = viewModel.user;
-
-    if (user == null && !viewModel.isLoading) {
-      return Scaffold(
-        appBar: AppBar(title: Text(AppTexts.editProfile)),
-        body: Center(
-          child: viewModel.errorMessage != null
-              ? Text(viewModel.errorMessage!)
-              : CircularProgressIndicator(),
-        ),
-      );
-    }
-
     return Scaffold(
+      backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
+        backgroundColor: AppColors.backgroundLight,
+        elevation: 0,
+        centerTitle: false,
         title: Text(
-          AppTexts.editProfile,
-          style: TextStyle(
+          "PROFİLİ DÜZENLE",
+          style: GoogleFonts.syne(
             color: AppColors.textPrimary,
             fontSize: 20.sp,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w800,
           ),
         ),
-        backgroundColor: AppColors.backgroundWhite,
-        elevation: 0,
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: AppGradients.backgroundGradient,
+        leading: IconButton(
+          onPressed: () => _handleBack(context),
+          icon: const Icon(Icons.close, color: AppColors.textPrimary),
         ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: AppEdgeInsets.symmetric(horizontal: AppSizes.sizeXLarge),
-              child: Form(
-                key: viewModel.formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    SizedBox(height: AppSizes.sizeLarge.h),
-
-                    // Profile Photo Upload
-                    Center(
-                      child: ImagePickerWidget(
-                        label: 'Profil Fotoğrafı',
-                        selectedImage: viewModel.selectedImage,
-                        onImageSelected: (image) {
-                          viewModel.setSelectedImage(image);
-                        },
-                        imageHeight: 150.h,
-                        imageWidth: 150.w,
-                      ),
-                    ),
-
-                    SizedBox(height: AppSizes.sizeXLarge.h),
-
-                    // Name Field
-                    TextFieldWidget(
-                      textTitle: 'Ad Soyad',
-                      textController: viewModel.nameController,
-                      validator: Validators.emptyFieldValidator,
-                      textIcon: Icons.person_outline,
-                      hintText: 'Adınızı girin',
-                    ),
-
-                    SizedBox(height: AppSizes.sizeLarge.h),
-
-                    // Email Field
-                    TextFieldWidget(
-                      textTitle: AppTexts.email,
-                      textController: viewModel.emailController,
-                      validator: Validators.emailValidator,
-                      keyboardType: TextInputType.emailAddress,
-                      textIcon: Icons.email_outlined,
-                      hintText: 'ornek@email.com',
-                      enabled: false, // Email değiştirilemez
-                    ),
-
-                    SizedBox(height: AppSizes.sizeLarge.h),
-
-                    // İl Field
-                    TextFieldWidget(
-                      textTitle: 'İl',
-                      textController: viewModel.ilController,
-                      textIcon: Icons.location_city_outlined,
-                      hintText: 'İl girin (opsiyonel)',
-                    ),
-
-                    SizedBox(height: AppSizes.sizeLarge.h),
-
-                    // İlçe Field
-                    TextFieldWidget(
-                      textTitle: 'İlçe',
-                      textController: viewModel.ilceController,
-                      textIcon: Icons.location_on_outlined,
-                      hintText: 'İlçe girin (opsiyonel)',
-                    ),
-
-                    SizedBox(height: AppSizes.sizeXLarge.h),
-
-                    // Update Button
-                    ButtonWidget(
-                      textTitle: 'Profili Güncelle',
-                      onTap: () => _handleUpdateProfile(context),
-                      enabled: !viewModel.isLoading,
-                      isLoading: viewModel.isLoading,
-                    ),
-
-                    SizedBox(height: AppSizes.sizeLarge.h),
-
-                    // Error Message
-                    if (viewModel.errorMessage != null)
-                      Container(
-                        padding: AppEdgeInsets.all(AppSizes.sizeMedium),
-                        decoration: BoxDecoration(
-                          color: AppColors.errorLight,
-                          borderRadius:
-                              BorderRadius.circular(AppSizes.sizeMedium.w),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.error_outline,
-                              color: AppColors.errorColor,
-                              size: 20.sp,
-                            ),
-                            SizedBox(width: AppSizes.sizeSmall.w),
-                            Expanded(
-                              child: Text(
-                                viewModel.errorMessage!,
-                                style: TextStyle(
-                                  color: AppColors.errorColor,
-                                  fontSize: 14.sp,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
+      ),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.symmetric(horizontal: 24.w),
+        child: Form(
+          key: viewModel.formKey,
+          child: Column(
+            children: [
+              SizedBox(height: 32.h),
+              _buildAvatarEdit(context),
+              SizedBox(height: 48.h),
+              _buildFormFields(),
+              SizedBox(height: 48.h),
+              _buildSaveButton(context),
+              SizedBox(height: 60.h),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Future<void> _handleUpdateProfile(BuildContext context) async {
+  Widget _buildAvatarEdit(BuildContext context) {
+    return Center(
+      child: Stack(
+        children: [
+          Container(
+            width: 120.w,
+            height: 120.w,
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              border: Border.all(color: AppColors.primary, width: 2),
+              boxShadow: AppShadows.sharp,
+            ),
+            child: _buildAvatarContent(),
+          ),
+          Positioned(
+            right: -8.w,
+            bottom: -8.h,
+            child: GestureDetector(
+              onTap: () => _showImageSourceActionSheet(context),
+              child: Container(
+                padding: EdgeInsets.all(8.w),
+                decoration: BoxDecoration(
+                  color: AppColors.accent,
+                  border: Border.all(color: AppColors.primary, width: 1.5),
+                  shape: BoxShape.rectangle,
+                ),
+                child: const Icon(Icons.camera_alt,
+                    color: AppColors.textWhite, size: 20),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAvatarContent() {
+    if (viewModel.selectedImage != null) {
+      return Image.file(viewModel.selectedImage!, fit: BoxFit.cover);
+    }
+    if (viewModel.imageUrl != null) {
+      return Image.network(viewModel.imageUrl!, fit: BoxFit.cover);
+    }
+    return Center(
+      child: Text(
+        viewModel.user?.name?[0].toUpperCase() ?? "?",
+        style: GoogleFonts.syne(
+          color: AppColors.textWhite,
+          fontSize: 40.sp,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFormFields() {
+    return Column(
+      children: [
+        TextFieldWidget(
+          label: "AD SOYAD",
+          hintText: "Adınızı ve soyadınızı girin",
+          controller: viewModel.nameController,
+          validator: (v) => v!.isEmpty ? "Lütfen adınızı girin" : null,
+        ),
+        SizedBox(height: 24.h),
+        TextFieldWidget(
+          label: "E-POSTA",
+          hintText: "E-posta adresinizi girin",
+          controller: viewModel.emailController,
+          readOnly: true,
+        ),
+        SizedBox(height: 24.h),
+        Row(
+          children: [
+            Expanded(
+              child: TextFieldWidget(
+                label: "ŞEHİR",
+                hintText: "İl",
+                controller: viewModel.ilController,
+              ),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: TextFieldWidget(
+                label: "İLÇE",
+                hintText: "İlçe",
+                controller: viewModel.ilceController,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSaveButton(BuildContext context) {
+    return GestureDetector(
+      onTap: viewModel.isLoading ? null : () => _handleSave(context),
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(vertical: 20.h),
+        decoration: BoxDecoration(
+          color: viewModel.isFormChanged ? AppColors.primary : AppColors.grey,
+          border: Border.all(color: AppColors.primary, width: 2),
+          boxShadow: viewModel.isFormChanged ? AppShadows.sharp : null,
+        ),
+        child: Center(
+          child: viewModel.isLoading
+              ? SizedBox(
+                  width: 20.w,
+                  height: 20.w,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(AppColors.textWhite),
+                  ),
+                )
+              : Text(
+                  "KAYDET",
+                  style: GoogleFonts.syne(
+                    color: AppColors.textWhite,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16.sp,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+        ),
+      ),
+    );
+  }
+
+  void _showImageSourceActionSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.backgroundLight,
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Galeriden Seç'),
+              onTap: () {
+                _pickImage(ImageSource.gallery);
+                Navigator.of(context).pop();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Kamera ile Çek'),
+              onTap: () {
+                _pickImage(ImageSource.camera);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: source);
+    if (pickedFile != null) {
+      viewModel.setSelectedImage(File(pickedFile.path));
+    }
+  }
+
+  void _handleSave(BuildContext context) async {
     final success = await viewModel.updateProfile(context);
-
     if (success && context.mounted) {
-      await AlertDialogWidget.showSuccessfulDialog(
-        context,
-        'Profil başarıyla güncellendi!',
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profil başarıyla güncellendi')),
       );
+      Navigator.pop(context);
+    } else if (viewModel.errorMessage != null && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(viewModel.errorMessage!)),
+      );
+    }
+  }
 
-      if (context.mounted) {
-        NavigationUtil.goBack(context);
-      }
+  void _handleBack(BuildContext context) {
+    if (viewModel.isFormChanged) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text("KAYDEDİLMEMİŞ DEĞİŞİKLİKLER",
+              style: GoogleFonts.syne(fontWeight: FontWeight.w800)),
+          content: Text(
+              "Yaptığınız değişiklikler kaybolacak. Çıkmak istiyor musunuz?",
+              style: GoogleFonts.instrumentSans()),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text("HAYIR",
+                  style: GoogleFonts.syne(color: AppColors.primary)),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pop(context);
+              },
+              child: Text("EVET",
+                  style: GoogleFonts.syne(color: AppColors.errorColor)),
+            ),
+          ],
+        ),
+      );
+    } else {
+      Navigator.pop(context);
     }
   }
 }
-

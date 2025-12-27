@@ -1,17 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../base/constants/app_constants.dart';
-import '../../../base/constants/app_size.dart';
-import '../../../base/constants/app_edge_insets.dart';
 import '../../../common_widgets/text_field_widget.dart';
-import '../../../common_widgets/empty_state_widget.dart';
-import '../../../common_widgets/error_state_widget.dart';
-import '../../../common_widgets/book_card_shimmer.dart';
 import '../../../utils/navigation_util.dart';
 import '../viewmodels/search_view_model.dart';
-import '../../home/widgets/book_card_widget.dart';
 
-/// Search View - Arama ekranı UI
 class SearchView extends StatelessWidget {
   final SearchViewModel viewModel;
 
@@ -25,247 +19,125 @@ class SearchView extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
-        title: const Text('Kitap Ara'),
-        backgroundColor: AppColors.backgroundWhite,
-        elevation: 0,
-        automaticallyImplyLeading: false,
+        title: const Text("KEŞFET"),
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Search Bar
-            _buildSearchBar(context),
-            
-            // Filter Chips
-            _buildFilterChips(),
-            
-            // Search Results
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: () => viewModel.performSearch(),
-                child: viewModel.isLoading && viewModel.searchResults.isEmpty
-                    ? _buildShimmerList()
-                    : _buildSearchResults(context),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSearchBar(BuildContext context) {
-    return Container(
-      padding: AppEdgeInsets.symmetric(
-        horizontal: AppSizes.sizeLarge,
-        vertical: AppSizes.sizeMedium,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundWhite,
-        boxShadow: AppShadows.small,
-      ),
-      child: TextFieldWidget(
-        textController: viewModel.searchController,
-        hintText: 'Kitap adı, yazar veya tür ara...',
-        textIcon: Icons.search,
-        onChanged: (value) {
-          // ViewModel'deki listener otomatik tetiklenir
-        },
-      ),
-    );
-  }
-
-  Widget _buildFilterChips() {
-    final filters = ['Roman', 'Hikaye', 'Şiir', 'Bilim', 'Tarih'];
-    final languages = ['Türkçe', 'İngilizce', 'Almanca', 'Fransızca'];
-
-    return Container(
-      padding: AppEdgeInsets.symmetric(
-        horizontal: AppSizes.sizeLarge,
-        vertical: AppSizes.sizeSmall,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      body: Column(
         children: [
-          // Type Filters
-          if (filters.isNotEmpty) ...[
-            Text(
-              'Tür',
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-              ),
+          Padding(
+            padding: EdgeInsets.all(24.w),
+            child: TextFieldWidget(
+              label: "ARAMA",
+              hintText: "Kitap, yazar veya kategori...",
+              controller: viewModel.searchController,
+              prefixIcon: const Icon(Icons.search),
+              onChanged: (v) => viewModel.search(v),
             ),
-            SizedBox(height: AppSizes.sizeSmall.h),
-            SizedBox(
-              height: 40.h,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: filters.length,
-                itemBuilder: (context, index) {
-                  final filter = filters[index];
-                  final isSelected = viewModel.selectedType == filter;
-                  
-                  return Padding(
-                    padding: AppEdgeInsets.only(right: AppSizes.sizeSmall),
-                    child: FilterChip(
-                      label: Text(filter),
-                      selected: isSelected,
-                      onSelected: (selected) {
-                        viewModel.setTypeFilter(selected ? filter : null);
-                      },
-                      selectedColor: AppColors.primary.withOpacity(0.2),
-                      checkmarkColor: AppColors.primary,
-                      labelStyle: TextStyle(
-                        color: isSelected
-                            ? AppColors.primary
-                            : AppColors.textSecondary,
-                        fontSize: 13.sp,
-                        fontWeight:
-                            isSelected ? FontWeight.w600 : FontWeight.w400,
-                      ),
-                      padding: AppEdgeInsets.symmetric(
-                        horizontal: AppSizes.sizeMedium,
-                        vertical: AppSizes.sizeXSmall,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            SizedBox(height: AppSizes.sizeMedium.h),
-          ],
-          
-          // Language Filters
-          if (languages.isNotEmpty) ...[
-            Text(
-              'Dil',
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            SizedBox(height: AppSizes.sizeSmall.h),
-            SizedBox(
-              height: 40.h,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: languages.length,
-                itemBuilder: (context, index) {
-                  final language = languages[index];
-                  final isSelected = viewModel.selectedLanguage == language;
-                  
-                  return Padding(
-                    padding: AppEdgeInsets.only(right: AppSizes.sizeSmall),
-                    child: FilterChip(
-                      label: Text(language),
-                      selected: isSelected,
-                      onSelected: (selected) {
-                        viewModel.setLanguageFilter(selected ? language : null);
-                      },
-                      selectedColor: AppColors.primary.withOpacity(0.2),
-                      checkmarkColor: AppColors.primary,
-                      labelStyle: TextStyle(
-                        color: isSelected
-                            ? AppColors.primary
-                            : AppColors.textSecondary,
-                        fontSize: 13.sp,
-                        fontWeight:
-                            isSelected ? FontWeight.w600 : FontWeight.w400,
-                      ),
-                      padding: AppEdgeInsets.symmetric(
-                        horizontal: AppSizes.sizeMedium,
-                        vertical: AppSizes.sizeXSmall,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
+          ),
+          Expanded(
+            child: viewModel.searchResults.isEmpty
+                ? _buildEmptyState()
+                : _buildResultsList(),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildShimmerList() {
-    return GridView.builder(
-      padding: AppEdgeInsets.all(AppSizes.sizeLarge),
-      physics: const AlwaysScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 0.7,
-        crossAxisSpacing: AppSizes.sizeMedium.w,
-        mainAxisSpacing: AppSizes.sizeMedium.h,
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: EdgeInsets.all(32.w),
+            decoration: BoxDecoration(
+              color: AppColors.secondaryLight,
+              border: Border.all(color: AppColors.primary, width: 2),
+            ),
+            child: const Icon(Icons.search_off_outlined,
+                size: 64, color: AppColors.primary),
+          ),
+          SizedBox(height: 24.h),
+          Text(
+            "SONUÇ BULUNAMADI",
+            style: GoogleFonts.syne(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 2,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            "Farklı anahtar kelimeler denemeye ne dersin?",
+            textAlign: TextAlign.center,
+            style: GoogleFonts.instrumentSans(
+              fontSize: 14.sp,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
       ),
-      itemCount: 6,
-      itemBuilder: (context, index) {
-        return BookCardShimmer();
-      },
     );
   }
 
-  Widget _buildSearchResults(BuildContext context) {
-    // Error State
-    if (viewModel.errorMessage != null) {
-      return ErrorStateWidget.generic(
-        title: 'Arama Hatası',
-        message: viewModel.errorMessage!,
-        onRetry: () => viewModel.performSearch(),
-      );
-    }
-
-    final results = viewModel.searchResults;
-
-    // Empty State - Arama yapılmamış
-    if (!viewModel.hasSearchQuery &&
-        viewModel.selectedType == null &&
-        viewModel.selectedLanguage == null) {
-      return EmptyStateWidget.generic(
-        icon: Icons.search_off,
-        title: 'Arama Yapın',
-        message: 'Kitap adı, yazar veya tür ile arama yapabilirsiniz',
-      );
-    }
-
-    // Empty State - Sonuç bulunamadı
-    if (results.isEmpty) {
-      return EmptyStateWidget.generic(
-        icon: Icons.book_outlined,
-        title: 'Sonuç Bulunamadı',
-        message: 'Arama kriterlerinize uygun kitap bulunamadı',
-        onAction: () => viewModel.clearFilters(),
-        actionText: 'Filtreleri Temizle',
-      );
-    }
-
-    // Results Grid
-    return GridView.builder(
-      padding: AppEdgeInsets.all(AppSizes.sizeLarge),
-      physics: const AlwaysScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 0.7,
-        crossAxisSpacing: AppSizes.sizeMedium.w,
-        mainAxisSpacing: AppSizes.sizeMedium.h,
-      ),
-      itemCount: results.length,
+  Widget _buildResultsList() {
+    return ListView.separated(
+      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 8.h),
+      itemCount: viewModel.searchResults.length,
+      separatorBuilder: (context, index) => SizedBox(height: 16.h),
       itemBuilder: (context, index) {
-        final book = results[index];
-        return BookCardWidget(
-          book: book,
-          onTap: () {
-            NavigationUtil.navigateToPage(
-              context,
-              NavigationUtil.bookDetailScreen,
-              arguments: book.id,
-            );
-          },
+        final book = viewModel.searchResults[index];
+        return InkWell(
+          onTap: () =>
+              NavigationUtil.navigateToBookDetail(context, book.id ?? ""),
+          child: Container(
+            padding: EdgeInsets.all(12.w),
+            decoration: BoxDecoration(
+              color: AppColors.backgroundWhite,
+              border: Border.all(color: AppColors.primary, width: 1.5),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 60.w,
+                  height: 80.h,
+                  decoration: BoxDecoration(
+                    color: AppColors.secondary,
+                    border: Border.all(color: AppColors.primary, width: 1),
+                  ),
+                  child: const Icon(Icons.book,
+                      size: 24, color: AppColors.primary),
+                ),
+                SizedBox(width: 16.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        book.name?.toUpperCase() ?? "İSİMSİZ",
+                        style: GoogleFonts.syne(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      Text(
+                        book.writer ?? "Yazar Belirtilmemiş",
+                        style: GoogleFonts.instrumentSans(
+                          fontSize: 12.sp,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.arrow_forward_ios,
+                    size: 16, color: AppColors.primary),
+              ],
+            ),
+          ),
         );
       },
     );
   }
 }
-
