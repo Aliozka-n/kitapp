@@ -76,25 +76,41 @@ class SettingsService {
         );
       }
 
-      // Kullanıcının kitaplarını sil
+      // 1. Kullanıcının kitaplarını sil
       await _supabase.from('books').delete().eq('user_id', userId);
 
-      // Kullanıcının favorilerini sil
+      // 2. Kullanıcının favorilerini sil
       await _supabase.from('favorites').delete().eq('user_id', userId);
 
-      // Kullanıcının mesajlarını sil
+      // 3. Kullanıcının mesajlarını sil
       await _supabase
           .from('messages')
           .delete()
           .or('sender_id.eq.$userId,receiver_id.eq.$userId');
 
-      // Kullanıcının profilini sil
-      await _supabase.from('profiles').delete().eq('id', userId);
+      // 4. Kullanıcının book_swaps kayıtlarını sil (eğer tablo varsa)
+      try {
+        await _supabase
+            .from('book_swaps')
+            .delete()
+            .or('requester_id.eq.$userId,owner_id.eq.$userId');
+      } catch (e) {
+        // book_swaps tablosu yoksa veya hata varsa devam et
+      }
 
-      // Oturumu kapat
-      await _supabase.auth.signOut();
+      // 5. Kullanıcının profilini sil
+      // NOT: Database trigger otomatik olarak auth.users'dan da siler
+      // Bu işlem auth session'ı geçersiz kılar, bu yüzden en son yapılmalı
+      await _supabase.from('users').delete().eq('id', userId);
 
-      // SharedPreferences'ı temizle
+      // 6. Oturumu kapat (auth user trigger tarafından silindi, ama güvenlik için)
+      try {
+        await _supabase.auth.signOut();
+      } catch (e) {
+        // Session zaten geçersiz olabilir, devam et
+      }
+
+      // 8. SharedPreferences'ı temizle
       final prefs = await SharedPreferencesUtil.getInstance();
       await prefs.removeAll();
 
