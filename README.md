@@ -260,13 +260,15 @@ flutter build ios --release
 
 <div align="center">
 
-| Ana Sayfa | Kitap Detayı | Takas |
-|:-----------:|:-----------:|:--------:|
-| ![Ana Sayfa](assets/screenshots/home.png) | ![Detay](assets/screenshots/detail.png) | ![Takas](assets/screenshots/exchange.png) |
+**Uygulama içi görseller**
 
-| Mesajlar | Profil | Arama |
+| | | |
+|:-----------:|:-----------:|:--------:|
+| ![Ekran Görüntüsü 1](assets/screenshots/img.png) | ![Ekran Görüntüsü 2](assets/screenshots/img_1.png) | ![Ekran Görüntüsü 3](assets/screenshots/img_2.png) |
+
+| | | |
 |:--------:|:-------:|:------:|
-| ![Mesajlar](assets/screenshots/messages.png) | ![Profil](assets/screenshots/profile.png) | ![Arama](assets/screenshots/search.png) |
+| ![Ekran Görüntüsü 4](assets/screenshots/img_3.png) | ![Ekran Görüntüsü 5](assets/screenshots/img_4.png) | ![Ekran Görüntüsü 6](assets/screenshots/img_5.png) |
 
 </div>
 

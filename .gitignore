@@ -51,3 +51,5 @@ app.*.map.json
 /UYGULAMA_DEGERLENDIRME_RAPORU.md
 /supabase_storage_policies.sql
 /supabase_location_filter_update.sql
+/ACCOUNT_DELETION_SETUP.md
+/supabase_delete_user_function.sql
