@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../base/constants/app_constants.dart';
 import '../../../common_widgets/button_widget.dart';
+import '../../../common_widgets/dropdown_widget.dart';
 import '../../../common_widgets/text_field_widget.dart';
 import '../../../utils/navigation_util.dart';
 import '../../../utils/validators_util.dart';
@@ -88,6 +89,10 @@ class RegisterView extends StatelessWidget {
                   ),
                   prefixIcon: const Icon(Icons.lock_reset, size: 20),
                 ),
+                SizedBox(height: 20.h),
+                _buildCityDropdown(),
+                SizedBox(height: 20.h),
+                _buildDistrictDropdown(),
                 SizedBox(height: 32.h),
                 ButtonWidget(
                   text: "KAYIT OL",
@@ -140,6 +145,47 @@ class RegisterView extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildCityDropdown() {
+    return DropdownWidget<String>(
+      label: "İL",
+      hintText: "İl seçin...",
+      value: viewModel.selectedCity,
+      items: viewModel.allCities,
+      itemLabel: (city) => city,
+      onChanged: (city) => viewModel.setSelectedCity(city),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return "Lütfen bir il seçin";
+        }
+        return null;
+      },
+      prefixIcon: const Icon(Icons.location_city, size: 20),
+    );
+  }
+
+  Widget _buildDistrictDropdown() {
+    return DropdownWidget<String>(
+      label: "İLÇE",
+      hintText: viewModel.selectedCity == null 
+          ? "Önce il seçin..." 
+          : "İlçe seçin...",
+      value: viewModel.selectedDistrict,
+      items: viewModel.availableDistricts,
+      itemLabel: (district) => district,
+      onChanged: viewModel.selectedCity == null 
+          ? null 
+          : (district) => viewModel.setSelectedDistrict(district),
+      validator: (value) {
+        if (viewModel.selectedCity != null && (value == null || value.isEmpty)) {
+          return "Lütfen bir ilçe seçin";
+        }
+        return null;
+      },
+      isEnabled: viewModel.selectedCity != null,
+      prefixIcon: const Icon(Icons.location_on, size: 20),
     );
   }
 }

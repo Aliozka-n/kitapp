@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../base/services/image_upload_service.dart';
 import '../../../base/viewmodels/base_view_model.dart';
 import '../../../domain/dtos/user_dto.dart' as dto;
+import '../../../domain/models/turkey_location_model.dart';
 import '../edit_profile_service.dart';
 
 /// Edit Profile ViewModel - Profil düzenleme ekranının durum ve iş kuralları
@@ -14,14 +15,14 @@ class EditProfileViewModel extends BaseViewModel {
   // PRIVATE FIELDS
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
-  final TextEditingController ilController = TextEditingController();
-  final TextEditingController ilceController = TextEditingController();
   final formKey = GlobalKey<FormState>();
   String? _errorMessage;
   bool _isSuccess = false;
   dto.UserResponse? _user;
   File? _selectedImage;
   String? _imageUrl;
+  String? _selectedCity;
+  String? _selectedDistrict;
 
   // PUBLIC GETTERS
   String? get errorMessage => _errorMessage;
@@ -29,18 +30,46 @@ class EditProfileViewModel extends BaseViewModel {
   dto.UserResponse? get user => _user;
   File? get selectedImage => _selectedImage;
   String? get imageUrl => _imageUrl;
-  
+  String? get selectedCity => _selectedCity;
+  String? get selectedDistrict => _selectedDistrict;
+
+  /// Tüm illeri getir
+  List<String> get allCities => TurkeyLocationModel.allCities;
+
+  /// Seçili ile ait ilçeleri getir
+  List<String> get availableDistricts {
+    if (_selectedCity == null) return [];
+    return TurkeyLocationModel.getDistrictsForCity(_selectedCity!);
+  }
+
   /// Form değişti mi kontrol et
   bool get isFormChanged {
     if (_user == null) return false;
-    
+
     final nameChanged = nameController.text.trim() != (_user?.name ?? '');
     final emailChanged = emailController.text.trim() != (_user?.email ?? '');
-    final ilChanged = ilController.text.trim() != (_user?.il ?? '');
-    final ilceChanged = ilceController.text.trim() != (_user?.ilce ?? '');
+    final ilChanged = _selectedCity != (_user?.il ?? '');
+    final ilceChanged = _selectedDistrict != (_user?.ilce ?? '');
     final imageChanged = _selectedImage != null;
-    
-    return nameChanged || emailChanged || ilChanged || ilceChanged || imageChanged;
+
+    return nameChanged ||
+        emailChanged ||
+        ilChanged ||
+        ilceChanged ||
+        imageChanged;
+  }
+
+  /// İl seç
+  void setSelectedCity(String? city) {
+    _selectedCity = city;
+    _selectedDistrict = null; // İl değiştiğinde ilçe sıfırla
+    reloadState();
+  }
+
+  /// İlçe seç
+  void setSelectedDistrict(String? district) {
+    _selectedDistrict = district;
+    reloadState();
   }
 
   // Constructor
@@ -61,14 +90,20 @@ class EditProfileViewModel extends BaseViewModel {
 
       if (response.isSuccessful && response.data != null) {
         _user = response.data!;
-        
+
         // Form alanlarını doldur
         nameController.text = _user?.name ?? '';
         emailController.text = _user?.email ?? '';
-        ilController.text = _user?.il ?? '';
-        ilceController.text = _user?.ilce ?? '';
+
+        // İl/ilçe adlarını normalize et (veritabanından küçük harf gelebilir)
+        _selectedCity = TurkeyLocationModel.normalizeCityName(_user?.il);
+        _selectedDistrict = _selectedCity != null && _user?.ilce != null
+            ? TurkeyLocationModel.normalizeDistrictName(
+                _selectedCity, _user?.ilce)
+            : null;
+
         _imageUrl = _user?.avatarUrl;
-        
+
         _errorMessage = null;
         reloadState();
       } else {
@@ -99,7 +134,8 @@ class EditProfileViewModel extends BaseViewModel {
     _errorMessage = null;
 
     try {
-      final response = await _imageUploadService.uploadProfileImage(_selectedImage!);
+      final response =
+          await _imageUploadService.uploadProfileImage(_selectedImage!);
 
       if (response.isSuccessful && response.data != null) {
         _imageUrl = response.data!;
@@ -147,8 +183,8 @@ class EditProfileViewModel extends BaseViewModel {
       final request = dto.UserRequest(
         name: nameController.text.trim(),
         email: emailController.text.trim(),
-        il: ilController.text.trim().isNotEmpty ? ilController.text.trim() : null,
-        ilce: ilceController.text.trim().isNotEmpty ? ilceController.text.trim() : null,
+        il: _selectedCity,
+        ilce: _selectedDistrict,
         avatarUrl: _imageUrl,
       );
 
@@ -181,9 +217,6 @@ class EditProfileViewModel extends BaseViewModel {
   void dispose() {
     nameController.dispose();
     emailController.dispose();
-    ilController.dispose();
-    ilceController.dispose();
     super.dispose();
   }
 }
-

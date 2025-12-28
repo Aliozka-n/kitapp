@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../base/constants/app_constants.dart';
 import '../../../base/constants/home_constants.dart';
 import '../../../domain/dtos/book_dto.dart';
+import '../../../common_widgets/dropdown_widget.dart';
 import '../../../common_widgets/text_field_widget.dart';
 import '../../../utils/navigation_util.dart';
 import '../viewmodels/home_view_model.dart';
@@ -42,6 +43,8 @@ class HomeView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  SizedBox(height: 16.h),
+                  _buildLocationFilters(),
                   SizedBox(height: 16.h),
                   _buildSearchBar(),
 
@@ -93,7 +96,7 @@ class HomeView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(height: 32.h),
+                SizedBox(height: 32.h),
         Row(
           children: [
             Container(
@@ -110,13 +113,17 @@ class HomeView extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    Icons.search_rounded,
+                    viewModel.selectedCity != null || viewModel.selectedDistrict != null
+                        ? Icons.filter_alt_rounded
+                        : Icons.search_rounded,
                     size: 14.sp,
                     color: AppColors.accentCyan,
                   ),
                   SizedBox(width: 6.w),
                   Text(
-                    "ARAMA SONUÇLARI",
+                    viewModel.selectedCity != null || viewModel.selectedDistrict != null
+                        ? "FİLTRE SONUÇLARI"
+                        : "ARAMA SONUÇLARI",
                     style: GoogleFonts.outfit(
                       fontSize: 11.sp,
                       fontWeight: FontWeight.w700,
@@ -187,13 +194,104 @@ class HomeView extends StatelessWidget {
     );
   }
 
+  Widget _buildLocationFilters() {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _buildCityDropdown(),
+            ),
+            if (viewModel.selectedCity != null) ...[
+              SizedBox(width: 12.w),
+              Expanded(
+                child: _buildDistrictDropdown(),
+              ),
+            ],
+          ],
+        ),
+        if (viewModel.selectedCity != null || viewModel.selectedDistrict != null)
+          Padding(
+            padding: EdgeInsets.only(top: 12.h),
+            child: GestureDetector(
+              onTap: () async {
+                await viewModel.clearLocationFilters();
+                viewModel.reloadState();
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                decoration: BoxDecoration(
+                  color: AppColors.accentCyan.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(
+                    color: AppColors.accentCyan.withOpacity(0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.clear_rounded,
+                      size: 16.sp,
+                      color: AppColors.accentCyan,
+                    ),
+                    SizedBox(width: 6.w),
+                    Text(
+                      "FİLTRELERİ TEMİZLE",
+                      style: GoogleFonts.outfit(
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.accentCyan,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildCityDropdown() {
+    return DropdownWidget<String>(
+      label: "İL",
+      hintText: "Tüm iller",
+      value: viewModel.selectedCity,
+      items: viewModel.allCities,
+      itemLabel: (city) => city,
+      onChanged: (city) async {
+        await viewModel.setSelectedCity(city);
+        viewModel.reloadState();
+      },
+      prefixIcon: const Icon(Icons.location_city, size: 18),
+    );
+  }
+
+  Widget _buildDistrictDropdown() {
+    return DropdownWidget<String>(
+      label: "İLÇE",
+      hintText: "Tüm ilçeler",
+      value: viewModel.selectedDistrict,
+      items: viewModel.availableDistricts,
+      itemLabel: (district) => district,
+      onChanged: (district) async {
+        await viewModel.setSelectedDistrict(district);
+        viewModel.reloadState();
+      },
+      prefixIcon: const Icon(Icons.location_on, size: 18),
+    );
+  }
+
   Widget _buildSearchBar() {
     return TextFieldWidget(
       label: "ARAMA",
       hintText: "Kitap, yazar veya tür ara...",
       controller: viewModel.searchController,
       prefixIcon: const Icon(Icons.search_rounded),
-      suffixIcon: viewModel.isSearchActive
+      suffixIcon: viewModel.searchController.text.isNotEmpty
           ? IconButton(
               icon: Icon(
                 Icons.close_rounded,

@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../base/constants/app_constants.dart';
+import '../../../common_widgets/dropdown_widget.dart';
 import '../../../common_widgets/text_field_widget.dart';
 import '../viewmodels/edit_profile_view_model.dart';
 
@@ -137,25 +138,9 @@ class EditProfileView extends StatelessWidget {
           controller: viewModel.emailController,
         ),
         SizedBox(height: 24.h),
-        Row(
-          children: [
-            Expanded(
-              child: TextFieldWidget(
-                label: "ŞEHİR",
-                hintText: "İl",
-                controller: viewModel.ilController,
-              ),
-            ),
-            SizedBox(width: 16.w),
-            Expanded(
-              child: TextFieldWidget(
-                label: "İLÇE",
-                hintText: "İlçe",
-                controller: viewModel.ilceController,
-              ),
-            ),
-          ],
-        ),
+        _buildCityDropdown(),
+        SizedBox(height: 20.h),
+        _buildDistrictDropdown(),
       ],
     );
   }
@@ -301,5 +286,34 @@ class EditProfileView extends StatelessWidget {
     } else {
       Navigator.pop(context);
     }
+  }
+
+  Widget _buildCityDropdown() {
+    return DropdownWidget<String>(
+      label: "İL",
+      hintText: "İl seçin...",
+      value: viewModel.selectedCity,
+      items: viewModel.allCities,
+      itemLabel: (city) => city,
+      onChanged: (city) => viewModel.setSelectedCity(city),
+      prefixIcon: const Icon(Icons.location_city, size: 20),
+    );
+  }
+
+  Widget _buildDistrictDropdown() {
+    return DropdownWidget<String>(
+      label: "İLÇE",
+      hintText: viewModel.selectedCity == null 
+          ? "Önce il seçin..." 
+          : "İlçe seçin...",
+      value: viewModel.selectedDistrict,
+      items: viewModel.availableDistricts,
+      itemLabel: (district) => district,
+      onChanged: viewModel.selectedCity == null 
+          ? null 
+          : (district) => viewModel.setSelectedDistrict(district),
+      isEnabled: viewModel.selectedCity != null,
+      prefixIcon: const Icon(Icons.location_on, size: 20),
+    );
   }
 }

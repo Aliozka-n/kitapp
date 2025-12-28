@@ -8,6 +8,8 @@ abstract class IHomeService {
     String? status,
     String? category,
     String? filter,
+    String? city,
+    String? district,
   });
 
   /// Book ara

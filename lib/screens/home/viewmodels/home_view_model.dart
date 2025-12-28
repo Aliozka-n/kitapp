@@ -6,6 +6,7 @@ import '../../../base/constants/home_constants.dart';
 import '../../../base/services/favorites_service.dart';
 import '../../../domain/dtos/book_dto.dart';
 import '../../../domain/models/book_model.dart';
+import '../../../domain/models/turkey_location_model.dart';
 import '../../../utils/book_event_bus.dart';
 import '../home_service.dart';
 
@@ -19,6 +20,8 @@ class HomeViewModel extends BaseViewModel {
   final TextEditingController searchController = TextEditingController();
   String? _errorMessage;
   String _selectedFilter = HomeConstants.defaultFilter;
+  String? _selectedCity;
+  String? _selectedDistrict;
   final FavoritesService _favoritesService = FavoritesService();
   StreamSubscription<BookEvent>? _bookEventSubscription;
 
@@ -30,9 +33,23 @@ class HomeViewModel extends BaseViewModel {
   List<BookResponse> get books => _filteredBooks;
   String? get errorMessage => _errorMessage;
   String get selectedFilter => _selectedFilter;
+  String? get selectedCity => _selectedCity;
+  String? get selectedDistrict => _selectedDistrict;
+
+  /// Tüm illeri getir
+  List<String> get allCities => TurkeyLocationModel.allCities;
+
+  /// Seçili ile ait ilçeleri getir
+  List<String> get availableDistricts {
+    if (_selectedCity == null) return [];
+    return TurkeyLocationModel.getDistrictsForCity(_selectedCity!);
+  }
 
   /// Arama aktif mi? (Arama barına yazı yazıldığında true)
-  bool get isSearchActive => searchController.text.trim().isNotEmpty;
+  bool get isSearchActive => 
+      searchController.text.trim().isNotEmpty ||
+      _selectedCity != null ||
+      _selectedDistrict != null;
 
   // Get newly listed books (last N)
   List<BookResponse> get newlyListedBooks {
@@ -87,13 +104,36 @@ class HomeViewModel extends BaseViewModel {
     await loadBooks();
   }
 
+  /// İl seç
+  Future<void> setSelectedCity(String? city) async {
+    _selectedCity = city;
+    _selectedDistrict = null; // İl değiştiğinde ilçe sıfırla
+    await _applyLocationFilter();
+  }
+
+  /// İlçe seç
+  Future<void> setSelectedDistrict(String? district) async {
+    _selectedDistrict = district;
+    await _applyLocationFilter();
+  }
+
+  /// Lokasyon filtrelerini temizle
+  Future<void> clearLocationFilters() async {
+    _selectedCity = null;
+    _selectedDistrict = null;
+    await loadBooks(isSilent: true);
+  }
+
   /// Books yükle
   Future<void> loadBooks({bool isSilent = false}) async {
     if (!isSilent) isLoading = true;
     _errorMessage = null;
 
     try {
-      final response = await service.getBooks();
+      final response = await service.getBooks(
+        city: _selectedCity,
+        district: _selectedDistrict,
+      );
 
       if (response.isSuccessful && response.data != null) {
         _books = response.data ?? [];
@@ -108,6 +148,33 @@ class HomeViewModel extends BaseViewModel {
       reloadState();
     } finally {
       if (!isSilent) isLoading = false;
+    }
+  }
+
+  /// Lokasyon filtresi uygula
+  Future<void> _applyLocationFilter() async {
+    isLoading = true;
+    _errorMessage = null;
+
+    try {
+      final response = await service.getBooks(
+        city: _selectedCity,
+        district: _selectedDistrict,
+      );
+
+      if (response.isSuccessful && response.data != null) {
+        _books = response.data ?? [];
+        await _onSearchChanged(); // Arama ve filtreyi birlikte uygula
+        _errorMessage = null;
+      } else {
+        _errorMessage = response.message ?? 'Kitaplar yüklenemedi';
+        reloadState();
+      }
+    } catch (e) {
+      _errorMessage = 'Kitaplar yüklenirken hata oluştu';
+      reloadState();
+    } finally {
+      isLoading = false;
     }
   }
 

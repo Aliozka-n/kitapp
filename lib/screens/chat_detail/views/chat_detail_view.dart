@@ -37,6 +37,8 @@ class _ChatDetailViewState extends State<ChatDetailView>
   final ValueNotifier<bool> _showJump = ValueNotifier<bool>(false);
   String? _replySnippet;
   bool _isReplyToMe = false;
+  int _lastMessageCount = 0;
+  bool _hasScrolledToBottom = false;
 
   ChatDetailViewModel get viewModel => widget.viewModel;
 
@@ -45,12 +47,45 @@ class _ChatDetailViewState extends State<ChatDetailView>
     super.initState();
     viewModel.scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addObserver(this);
+
+    // ViewModel'deki değişiklikleri dinle
+    viewModel.addListener(_onViewModelChanged);
+
+    // Sayfa açıldığında mesajlar yüklendikten sonra en alta scroll et
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndScrollToBottom();
+    });
+  }
+
+  void _onViewModelChanged() {
+    // Mesajlar yüklendiğinde veya değiştiğinde kontrol et
+    if (viewModel.messages.length != _lastMessageCount) {
+      _lastMessageCount = viewModel.messages.length;
+
+      // İlk yükleme ise veya mesaj eklendi ise scroll et
+      if (!_hasScrolledToBottom && viewModel.messages.isNotEmpty) {
+        _checkAndScrollToBottom();
+      }
+    }
+  }
+
+  void _checkAndScrollToBottom() {
+    if (!mounted || viewModel.messages.isEmpty) return;
+
+    // Birkaç frame bekle ki ListView tam render olsun
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (mounted && viewModel.scrollController.hasClients) {
+        viewModel.scrollToBottom(animated: false);
+        _hasScrolledToBottom = true;
+      }
+    });
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     viewModel.scrollController.removeListener(_onScroll);
+    viewModel.removeListener(_onViewModelChanged);
     _showJump.dispose();
     super.dispose();
   }

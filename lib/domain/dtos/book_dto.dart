@@ -43,6 +43,8 @@ class BookResponse {
   final String? status; // Müsait, Takas Edildi, Rezerve, Satıldı
   final String? userId;
   final String? userName;
+  final String? userIl;
+  final String? userIlce;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -57,6 +59,8 @@ class BookResponse {
     this.status,
     this.userId,
     this.userName,
+    this.userIl,
+    this.userIlce,
     this.createdAt,
     this.updatedAt,
   });
@@ -90,6 +94,8 @@ class BookResponse {
       status: json['status'] ?? 'Müsait',
       userId: json['user_id']?.toString() ?? userData?['id']?.toString(),
       userName: json['user_name'] ?? userData?['name'] as String?,
+      userIl: json['user_il'] ?? userData?['il'] as String?,
+      userIlce: json['user_ilce'] ?? userData?['ilce'] as String?,
       createdAt: parseDate(json['created_at'] ?? json['createdAt']),
       updatedAt: parseDate(json['updated_at'] ?? json['updatedAt']),
     );
@@ -107,6 +113,8 @@ class BookResponse {
       'status': status,
       'userId': userId,
       'userName': userName,
+      'userIl': userIl,
+      'userIlce': userIlce,
       'createdAt': createdAt?.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
     };

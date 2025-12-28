@@ -43,21 +43,35 @@ class ChatDetailViewModel extends BaseViewModel {
   /// `ListView(reverse: false)` için en alt = maxScrollExtent.
   void scrollToBottom({bool animated = true}) {
     void tryScroll(int attempt) {
+      if (attempt > 5) return; // Max 5 deneme
+
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!scrollController.hasClients) {
-          if (attempt < 2) tryScroll(attempt + 1);
+          Future.delayed(Duration(milliseconds: 50 * (attempt + 1)), () {
+            tryScroll(attempt + 1);
+          });
           return;
         }
 
-        final target = scrollController.position.maxScrollExtent;
-        if (animated) {
-          scrollController.animateTo(
-            target,
-            duration: const Duration(milliseconds: 280),
-            curve: Curves.easeOutCubic,
-          );
-        } else {
-          scrollController.jumpTo(target);
+        final position = scrollController.position;
+        if (!position.hasContentDimensions) {
+          Future.delayed(Duration(milliseconds: 50 * (attempt + 1)), () {
+            tryScroll(attempt + 1);
+          });
+          return;
+        }
+
+        final target = position.maxScrollExtent;
+        if (target > 0) {
+          if (animated) {
+            scrollController.animateTo(
+              target,
+              duration: const Duration(milliseconds: 280),
+              curve: Curves.easeOutCubic,
+            );
+          } else {
+            scrollController.jumpTo(target);
+          }
         }
       });
     }
@@ -78,8 +92,10 @@ class ChatDetailViewModel extends BaseViewModel {
         _errorMessage = null;
         reloadState();
 
-        // Mesajlar yüklendikten sonra en alta scroll et
-        scrollToBottom(animated: false);
+        // Mesajlar yüklendikten sonra en alta scroll et - birkaç frame sonra
+        Future.delayed(const Duration(milliseconds: 100), () {
+          scrollToBottom(animated: false);
+        });
       } else {
         _errorMessage = response.message ?? 'Mesajlar yüklenemedi';
         reloadState();

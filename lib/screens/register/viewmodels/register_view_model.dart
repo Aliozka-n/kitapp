@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../base/viewmodels/base_view_model.dart';
 import '../../../domain/dtos/auth_dto.dart';
+import '../../../domain/models/turkey_location_model.dart';
 import '../../../utils/shared_preferences_util.dart';
 import '../register_service.dart';
 
@@ -15,18 +16,42 @@ class RegisterViewModel extends BaseViewModel {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
       TextEditingController();
-  final TextEditingController ilController = TextEditingController();
-  final TextEditingController ilceController = TextEditingController();
   final formKey = GlobalKey<FormState>();
   String? _errorMessage;
   bool _acceptedTerms = false;
+  String? _selectedCity;
+  String? _selectedDistrict;
 
   // PUBLIC GETTERS
   String? get errorMessage => _errorMessage;
   bool get acceptedTerms => _acceptedTerms;
+  String? get selectedCity => _selectedCity;
+  String? get selectedDistrict => _selectedDistrict;
+
+  /// Tüm illeri getir
+  List<String> get allCities => TurkeyLocationModel.allCities;
+
+  /// Seçili ile ait ilçeleri getir
+  List<String> get availableDistricts {
+    if (_selectedCity == null) return [];
+    return TurkeyLocationModel.getDistrictsForCity(_selectedCity!);
+  }
 
   void setAcceptedTerms(bool value) {
     _acceptedTerms = value;
+    reloadState();
+  }
+
+  /// İl seç
+  void setSelectedCity(String? city) {
+    _selectedCity = city;
+    _selectedDistrict = null; // İl değiştiğinde ilçe sıfırla
+    reloadState();
+  }
+
+  /// İlçe seç
+  void setSelectedDistrict(String? district) {
+    _selectedDistrict = district;
     reloadState();
   }
   
@@ -36,8 +61,8 @@ class RegisterViewModel extends BaseViewModel {
         emailController.text.trim().isEmpty &&
         passwordController.text.isEmpty &&
         confirmPasswordController.text.isEmpty &&
-        ilController.text.trim().isEmpty &&
-        ilceController.text.trim().isEmpty;
+        _selectedCity == null &&
+        _selectedDistrict == null;
   }
 
   // Constructor
@@ -65,12 +90,8 @@ class RegisterViewModel extends BaseViewModel {
         name: nameController.text.trim(),
         email: emailController.text.trim(),
         password: passwordController.text,
-        il: ilController.text.trim().isNotEmpty
-            ? ilController.text.trim()
-            : null,
-        ilce: ilceController.text.trim().isNotEmpty
-            ? ilceController.text.trim()
-            : null,
+        il: _selectedCity,
+        ilce: _selectedDistrict,
       );
 
       final response = await service.register(request);
@@ -109,8 +130,6 @@ class RegisterViewModel extends BaseViewModel {
     emailController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
-    ilController.dispose();
-    ilceController.dispose();
     super.dispose();
   }
 }
