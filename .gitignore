@@ -50,3 +50,4 @@ app.*.map.json
 /UI_TASARIM_DOKUMANTASYONU.md
 /UYGULAMA_DEGERLENDIRME_RAPORU.md
 /supabase_storage_policies.sql
+/supabase_location_filter_update.sql
