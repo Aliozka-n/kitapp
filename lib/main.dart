@@ -17,6 +17,7 @@ import 'screens/search/search_screen.dart';
 import 'screens/settings/settings_screen.dart';
 import 'screens/settings/views/privacy_policy_view.dart';
 import 'screens/settings/views/terms_of_service_view.dart';
+import 'screens/exchange/exchange_screen.dart';
 import 'utils/navigation_util.dart';
 import 'utils/network_config.dart';
 import 'utils/env_config.dart';
@@ -115,6 +116,14 @@ class MyApp extends StatelessWidget {
               case NavigationUtil.termsOfServiceScreen:
                 return MaterialPageRoute(
                   builder: (_) => const TermsOfServiceView(),
+                );
+              case NavigationUtil.exchangeScreen:
+                final args = settings.arguments as Map<String, dynamic>?;
+                return MaterialPageRoute(
+                  builder: (_) => ExchangeScreen(
+                    otherUserId: args?['otherUserId'] as String? ?? '',
+                    otherUserName: args?['otherUserName'] as String? ?? 'Kullanıcı',
+                  ),
                 );
               default:
                 return MaterialPageRoute(

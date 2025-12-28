@@ -127,6 +127,8 @@ class AddBookViewModel extends BaseViewModel {
   Future<bool> addBook(BuildContext context) async {
     // Form validation
     if (!formKey.currentState!.validate()) {
+      _errorMessage = 'Lütfen tüm zorunlu alanları doldurun';
+      reloadState();
       return false;
     }
     
@@ -173,8 +175,8 @@ class AddBookViewModel extends BaseViewModel {
           );
         }
         _clearForm();
-        isLoading = false;
         reloadState();
+        isLoading = false;
         return true;
       } else {
         _errorMessage = response.message ?? 'Kitap eklenemedi';
@@ -200,6 +202,7 @@ class AddBookViewModel extends BaseViewModel {
     _selectedLanguage = null;
     _selectedImage = null;
     _imageUrl = null;
+    _errorMessage = null;
   }
 
   @override

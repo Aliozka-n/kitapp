@@ -17,6 +17,7 @@ class NavigationUtil {
   static const String settingsScreen = '/settings';
   static const String privacyPolicyScreen = '/privacy-policy';
   static const String termsOfServiceScreen = '/terms-of-service';
+  static const String exchangeScreen = '/exchange';
 
   /// Navigate to page
   static Future<T?> navigateToPage<T>(
@@ -150,5 +151,25 @@ class NavigationUtil {
   /// Navigate to Terms of Service
   static Future<T?> navigateToTermsOfService<T>(BuildContext context) {
     return navigateToPage(context, termsOfServiceScreen);
+  }
+
+  /// Navigate to Exchange Screen - Quantum Book Exchange
+  ///
+  /// Dual Selection: Her iki taraftan da kitap seçilebilir
+  /// [otherUserId] - Karşı tarafın ID'si
+  /// [otherUserName] - Karşı tarafın adı
+  static Future<T?> navigateToExchange<T>(
+    BuildContext context, {
+    required String otherUserId,
+    required String otherUserName,
+  }) {
+    return navigateToPage(
+      context,
+      exchangeScreen,
+      arguments: {
+        'otherUserId': otherUserId,
+        'otherUserName': otherUserName,
+      },
+    );
   }
 }

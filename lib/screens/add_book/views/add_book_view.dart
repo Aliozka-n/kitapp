@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../base/constants/app_constants.dart';
 import '../../../common_widgets/button_widget.dart';
 import '../../../common_widgets/text_field_widget.dart';
@@ -83,11 +85,13 @@ class AddBookView extends StatelessWidget {
                   isLoading: viewModel.isLoading,
                   onPressed: () async {
                     final success = await viewModel.addBook(context);
-                    if (success && context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Kitap başarıyla eklendi.")),
-                      );
-                      onBookAdded?.call();
+                    if (context.mounted) {
+                      if (success) {
+                        _showSuccessSnackBar(context, "Kitap başarıyla eklendi.");
+                        onBookAdded?.call();
+                      } else if (viewModel.errorMessage != null) {
+                        _showErrorSnackBar(context, viewModel.errorMessage!);
+                      }
                     }
                   },
                 ),
@@ -160,7 +164,7 @@ class AddBookView extends StatelessWidget {
 
   Widget _buildImagePicker(BuildContext context) {
     return GestureDetector(
-      onTap: () => viewModel.setSelectedImage(null), // TODO: Implement image picker
+      onTap: () => _showImageSourceActionSheet(context),
       child: Container(
         width: double.infinity,
         height: 200.h,
@@ -171,7 +175,41 @@ class AddBookView extends StatelessWidget {
           boxShadow: AppShadows.card,
         ),
         child: viewModel.selectedImage != null
-            ? Image.file(viewModel.selectedImage!, fit: BoxFit.cover)
+            ? Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(24.r),
+                    child: Image.file(
+                      viewModel.selectedImage!,
+                      width: double.infinity,
+                      height: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  Positioned(
+                    top: 8.h,
+                    right: 8.w,
+                    child: GestureDetector(
+                      onTap: () {
+                        viewModel.setSelectedImage(null);
+                      },
+                      behavior: HitTestBehavior.opaque,
+                      child: Container(
+                        padding: EdgeInsets.all(8.w),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.6),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.close_rounded,
+                          color: AppColors.textPrimary,
+                          size: 20.sp,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              )
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -188,6 +226,121 @@ class AddBookView extends StatelessWidget {
                   ),
                 ],
               ),
+      ),
+    );
+  }
+
+  void _showImageSourceActionSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.primaryLight,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+      ),
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            if (viewModel.selectedImage != null)
+              ListTile(
+                leading: Icon(Icons.delete_outline_rounded, color: AppColors.errorColor),
+                title: Text(
+                  'Görseli Kaldır',
+                  style: GoogleFonts.plusJakartaSans(color: AppColors.errorColor),
+                ),
+                onTap: () {
+                  viewModel.setSelectedImage(null);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ListTile(
+              leading: Icon(Icons.photo_library_rounded, color: AppColors.accentCyan),
+              title: Text(
+                'Galeriden Seç',
+                style: GoogleFonts.plusJakartaSans(color: AppColors.textPrimary),
+              ),
+              onTap: () {
+                _pickImage(context, ImageSource.gallery);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.camera_alt_rounded, color: AppColors.accent),
+              title: Text(
+                'Kamera ile Çek',
+                style: GoogleFonts.plusJakartaSans(color: AppColors.textPrimary),
+              ),
+              onTap: () {
+                _pickImage(context, ImageSource.camera);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImage(BuildContext context, ImageSource source) async {
+    Navigator.of(context).pop();
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: source);
+    if (pickedFile != null) {
+      viewModel.setSelectedImage(File(pickedFile.path));
+    }
+  }
+
+  /// Success snackbar göster
+  void _showSuccessSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(Icons.check_circle_rounded, color: AppColors.textPrimary, size: 24.sp),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Text(
+                message,
+                style: GoogleFonts.plusJakartaSans(
+                  color: AppColors.textPrimary,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: AppColors.successColor,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        margin: EdgeInsets.all(16.w),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  /// Error snackbar göster
+  void _showErrorSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(Icons.error_outline_rounded, color: AppColors.textPrimary, size: 24.sp),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Text(
+                message,
+                style: GoogleFonts.plusJakartaSans(
+                  color: AppColors.textPrimary,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: AppColors.errorColor,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        margin: EdgeInsets.all(16.w),
+        duration: const Duration(seconds: 4),
       ),
     );
   }

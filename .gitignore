@@ -49,3 +49,4 @@ app.*.map.json
 /supabase_update_for_contact_feature.sql
 /UI_TASARIM_DOKUMANTASYONU.md
 /UYGULAMA_DEGERLENDIRME_RAPORU.md
+/supabase_storage_policies.sql

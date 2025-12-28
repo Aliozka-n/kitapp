@@ -1,6 +1,8 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../base/models/service_response.dart';
 import '../../domain/dtos/message_dto.dart';
+import '../../domain/dtos/swap_dto.dart';
+import '../../domain/dtos/book_dto.dart';
 
 /// Chat Detail Service - Supabase ile chat detay işlemleri
 class ChatDetailService {
@@ -147,6 +149,231 @@ class ChatDetailService {
     } catch (e) {
       return ServiceResponse.error(
         message: 'Kullanıcı bilgisi yüklenirken hata oluştu: ${e.toString()}',
+        statusCode: 500,
+      );
+    }
+  }
+
+  /// Swap detaylarını getir
+  Future<ServiceResponse<SwapResponse>> getSwapDetail(String swapId) async {
+    try {
+      final response =
+          await _supabase.from('book_swaps').select().eq('id', swapId).single();
+
+      final data = Map<String, dynamic>.from(response);
+
+      // Kitap bilgilerini ayrı ayrı çek
+      BookResponse? offeredBook;
+      BookResponse? requestedBook;
+
+      if (data['offered_book_id'] != null) {
+        final bookResponse = await _supabase
+            .from('books')
+            .select()
+            .eq('id', data['offered_book_id'])
+            .maybeSingle();
+        if (bookResponse != null) {
+          offeredBook =
+              BookResponse.fromJson(Map<String, dynamic>.from(bookResponse));
+        }
+      }
+
+      if (data['requested_book_id'] != null) {
+        final bookResponse = await _supabase
+            .from('books')
+            .select()
+            .eq('id', data['requested_book_id'])
+            .maybeSingle();
+        if (bookResponse != null) {
+          requestedBook =
+              BookResponse.fromJson(Map<String, dynamic>.from(bookResponse));
+        }
+      }
+
+      final swap = SwapResponse(
+        id: data['id']?.toString(),
+        requesterId: data['requester_id']?.toString(),
+        ownerId: data['owner_id']?.toString(),
+        requestedBookId: data['requested_book_id']?.toString(),
+        offeredBookId: data['offered_book_id']?.toString(),
+        status: SwapResponse.fromJson(data).status,
+        message: data['message'],
+        createdAt: data['created_at'] != null
+            ? DateTime.parse(data['created_at'])
+            : null,
+        offeredBook: offeredBook,
+        requestedBook: requestedBook,
+      );
+
+      return ServiceResponse.success(
+        data: swap,
+        message: 'Swap detayı yüklendi',
+        statusCode: 200,
+      );
+    } catch (e) {
+      return ServiceResponse.error(
+        message: 'Swap detayı yüklenirken hata oluştu: ${e.toString()}',
+        statusCode: 500,
+      );
+    }
+  }
+
+  /// Swap teklifini kabul et
+  Future<ServiceResponse<bool>> acceptSwapProposal(String swapId) async {
+    try {
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) {
+        return ServiceResponse.error(
+          message: 'Kullanıcı giriş yapmamış',
+          statusCode: 401,
+        );
+      }
+
+      // Swap bilgisini al
+      final swapData =
+          await _supabase.from('book_swaps').select().eq('id', swapId).single();
+
+      final requestedBookId = swapData['requested_book_id'].toString();
+      final offeredBookId = swapData['offered_book_id'].toString();
+      final requesterId = swapData['requester_id'].toString();
+
+      // Swap durumunu güncelle
+      await _supabase
+          .from('book_swaps')
+          .update({'status': 'Kabul Edildi'})
+          .eq('id', swapId)
+          .eq('owner_id', userId);
+
+      // Her iki kitabı da "Takas Edildi" yap
+      await _supabase
+          .from('books')
+          .update({'status': 'Takas Edildi'}).eq('id', requestedBookId);
+
+      await _supabase
+          .from('books')
+          .update({'status': 'Takas Edildi'}).eq('id', offeredBookId);
+
+      // Bildirim mesajı gönder
+      await _supabase.from('messages').insert({
+        'sender_id': userId,
+        'receiver_id': requesterId,
+        'last_message': '✅ Takas teklifiniz kabul edildi!',
+        'message_type': 'swap_accepted',
+        'swap_proposal_id': swapId,
+      });
+
+      return ServiceResponse.success(
+        data: true,
+        message: 'Swap kabul edildi',
+        statusCode: 200,
+      );
+    } catch (e) {
+      return ServiceResponse.error(
+        message: 'Swap kabul edilirken hata oluştu: ${e.toString()}',
+        statusCode: 500,
+      );
+    }
+  }
+
+  /// Swap teklifini reddet
+  Future<ServiceResponse<bool>> rejectSwapProposal(String swapId) async {
+    try {
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) {
+        return ServiceResponse.error(
+          message: 'Kullanıcı giriş yapmamış',
+          statusCode: 401,
+        );
+      }
+
+      // Swap bilgisini al
+      final swapData =
+          await _supabase.from('book_swaps').select().eq('id', swapId).single();
+
+      final offeredBookId = swapData['offered_book_id'].toString();
+      final requesterId = swapData['requester_id'].toString();
+
+      // Swap durumunu güncelle
+      await _supabase
+          .from('book_swaps')
+          .update({'status': 'Reddedildi'})
+          .eq('id', swapId)
+          .eq('owner_id', userId);
+
+      // Teklif edilen kitabı "Müsait" yap
+      await _supabase
+          .from('books')
+          .update({'status': 'Müsait'}).eq('id', offeredBookId);
+
+      // Bildirim mesajı gönder
+      await _supabase.from('messages').insert({
+        'sender_id': userId,
+        'receiver_id': requesterId,
+        'last_message': '❌ Takas teklifiniz reddedildi',
+        'message_type': 'swap_rejected',
+        'swap_proposal_id': swapId,
+      });
+
+      return ServiceResponse.success(
+        data: true,
+        message: 'Swap reddedildi',
+        statusCode: 200,
+      );
+    } catch (e) {
+      return ServiceResponse.error(
+        message: 'Swap reddedilirken hata oluştu: ${e.toString()}',
+        statusCode: 500,
+      );
+    }
+  }
+
+  /// Swap teklifini geri çek
+  Future<ServiceResponse<bool>> withdrawSwapProposal(String swapId) async {
+    try {
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) {
+        return ServiceResponse.error(
+          message: 'Kullanıcı giriş yapmamış',
+          statusCode: 401,
+        );
+      }
+
+      // Swap bilgisini al
+      final swapData =
+          await _supabase.from('book_swaps').select().eq('id', swapId).single();
+
+      final offeredBookId = swapData['offered_book_id'].toString();
+      final ownerId = swapData['owner_id'].toString();
+
+      // Swap durumunu güncelle - sadece gönderen çekebilir
+      await _supabase
+          .from('book_swaps')
+          .update({'status': 'İptal Edildi'})
+          .eq('id', swapId)
+          .eq('requester_id', userId);
+
+      // Teklif edilen kitabı "Müsait" yap
+      await _supabase
+          .from('books')
+          .update({'status': 'Müsait'}).eq('id', offeredBookId);
+
+      // Bildirim mesajı gönder
+      await _supabase.from('messages').insert({
+        'sender_id': userId,
+        'receiver_id': ownerId,
+        'last_message': '🚫 Takas teklifi geri çekildi',
+        'message_type': 'swap_withdrawn',
+        'swap_proposal_id': swapId,
+      });
+
+      return ServiceResponse.success(
+        data: true,
+        message: 'Swap geri çekildi',
+        statusCode: 200,
+      );
+    } catch (e) {
+      return ServiceResponse.error(
+        message: 'Swap geri çekilirken hata oluştu: ${e.toString()}',
         statusCode: 500,
       );
     }

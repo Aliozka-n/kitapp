@@ -7,12 +7,14 @@ class ChatAppBarWidget extends StatelessWidget {
   final String title;
   final String subtitle;
   final VoidCallback onBack;
+  final VoidCallback? onSwapTap;
 
   const ChatAppBarWidget({
     super.key,
     required this.title,
     required this.subtitle,
     required this.onBack,
+    this.onSwapTap,
   });
 
   @override
@@ -65,8 +67,43 @@ class ChatAppBarWidget extends StatelessWidget {
               ],
             ),
           ),
+          if (onSwapTap != null) ...[
+            _buildSwapButton(),
+            SizedBox(width: 8.w),
+          ],
           _buildActionIcon(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSwapButton() {
+    return GestureDetector(
+      onTap: onSwapTap,
+      child: Container(
+        width: 38.w,
+        height: 38.w,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF00D4FF).withOpacity(0.2),
+              const Color(0xFFFFB400).withOpacity(0.2),
+            ],
+          ),
+          border: Border.all(
+            color: const Color(0xFF00D4FF).withOpacity(0.4),
+          ),
+        ),
+        child: Center(
+          child: Icon(
+            Icons.swap_horiz_rounded,
+            size: 20.sp,
+            color: const Color(0xFF00D4FF),
+          ),
+        ),
       ),
     );
   }

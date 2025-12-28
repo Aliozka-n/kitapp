@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../base/viewmodels/base_view_model.dart';
 import '../../../domain/dtos/message_dto.dart';
+import '../../../domain/dtos/swap_dto.dart';
 import '../chat_detail_service.dart';
 
 /// Chat Detail ViewModel - Chat detail ekranının durum ve iş kuralları
@@ -199,6 +200,94 @@ class ChatDetailViewModel extends BaseViewModel {
       loadMessages(),
       loadReceiverInfo(),
     ]);
+  }
+
+  // ======================= SWAP İŞLEMLERİ =======================
+
+  /// Swap cache'i
+  final Map<String, SwapResponse> _swapCache = {};
+
+  /// Swap detayı getir (cache'li veya zorla yenile)
+  Future<SwapResponse?> getSwapDetail(String swapId,
+      {bool forceRefresh = false}) async {
+    // forceRefresh değilse önce cache'e bak
+    if (!forceRefresh && _swapCache.containsKey(swapId)) {
+      return _swapCache[swapId];
+    }
+
+    try {
+      final response = await service.getSwapDetail(swapId);
+      if (response.isSuccessful && response.data != null) {
+        _swapCache[swapId] = response.data!;
+        return response.data;
+      }
+    } catch (e) {
+      debugPrint('Swap detay hatası: $e');
+    }
+    return null;
+  }
+
+  /// Swap teklifini kabul et
+  Future<bool> acceptSwap(String swapId) async {
+    try {
+      final response = await service.acceptSwapProposal(swapId);
+      if (response.isSuccessful) {
+        // Cache'i temizle
+        _swapCache.remove(swapId);
+        // Mesajları yenile
+        await loadMessages();
+        return true;
+      }
+      _errorMessage = response.message;
+      reloadState();
+      return false;
+    } catch (e) {
+      _errorMessage = 'Swap kabul edilirken hata: $e';
+      reloadState();
+      return false;
+    }
+  }
+
+  /// Swap teklifini reddet
+  Future<bool> rejectSwap(String swapId) async {
+    try {
+      final response = await service.rejectSwapProposal(swapId);
+      if (response.isSuccessful) {
+        // Cache'i temizle
+        _swapCache.remove(swapId);
+        // Mesajları yenile
+        await loadMessages();
+        return true;
+      }
+      _errorMessage = response.message;
+      reloadState();
+      return false;
+    } catch (e) {
+      _errorMessage = 'Swap reddedilirken hata: $e';
+      reloadState();
+      return false;
+    }
+  }
+
+  /// Swap teklifini geri çek
+  Future<bool> withdrawSwap(String swapId) async {
+    try {
+      final response = await service.withdrawSwapProposal(swapId);
+      if (response.isSuccessful) {
+        // Cache'i temizle
+        _swapCache.remove(swapId);
+        // Mesajları yenile
+        await loadMessages();
+        return true;
+      }
+      _errorMessage = response.message;
+      reloadState();
+      return false;
+    } catch (e) {
+      _errorMessage = 'Swap geri çekilirken hata: $e';
+      reloadState();
+      return false;
+    }
   }
 
   @override

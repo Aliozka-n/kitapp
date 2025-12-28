@@ -41,8 +41,23 @@ class ImageUploadService {
         statusCode: 200,
       );
     } catch (e) {
+      String errorMessage = 'Görsel yüklenirken hata oluştu';
+      
+      if (e is StorageException) {
+        // RLS policy hatası
+        if (e.statusCode == '403' || e.message.contains('row-level security')) {
+          errorMessage = 'Görsel yükleme izni yok. Lütfen Supabase Storage politikalarını kontrol edin.';
+        } else if (e.statusCode == '404') {
+          errorMessage = 'Storage bucket bulunamadı. Lütfen "book-images" bucket\'ının oluşturulduğundan emin olun.';
+        } else {
+          errorMessage = 'Görsel yüklenirken bir hata oluştu: ${e.message}';
+        }
+      } else {
+        errorMessage = 'Görsel yüklenirken bir hata oluştu. Lütfen tekrar deneyin.';
+      }
+      
       return ServiceResponse.error(
-        message: 'Görsel yüklenirken hata oluştu: ${e.toString()}',
+        message: errorMessage,
         statusCode: 500,
       );
     }
@@ -82,8 +97,20 @@ class ImageUploadService {
         statusCode: 200,
       );
     } catch (e) {
+      String errorMessage = 'Profil fotoğrafı yüklenirken hata oluştu';
+      
+      if (e is StorageException) {
+        if (e.statusCode == '403' || e.message.contains('row-level security')) {
+          errorMessage = 'Görsel yükleme izni yok. Lütfen Supabase Storage politikalarını kontrol edin.';
+        } else {
+          errorMessage = 'Profil fotoğrafı yüklenirken bir hata oluştu: ${e.message}';
+        }
+      } else {
+        errorMessage = 'Profil fotoğrafı yüklenirken bir hata oluştu. Lütfen tekrar deneyin.';
+      }
+      
       return ServiceResponse.error(
-        message: 'Profil fotoğrafı yüklenirken hata oluştu: ${e.toString()}',
+        message: errorMessage,
         statusCode: 500,
       );
     }
