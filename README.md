@@ -260,7 +260,6 @@ flutter build ios --release
 
 <div align="center">
 
-**Uygulama içi görseller**
 
 | | | |
 |:-----------:|:-----------:|:--------:|
