@@ -220,7 +220,7 @@ lib/
 
 1. **Depoyu klonlayın**
    ```bash
-   git clone https://github.com/kullaniciadi/kitapp.git
+   git clone https://github.com/Aliozka-n/kitapp.git
    cd kitapp
    ```
 
@@ -358,11 +358,10 @@ Bu proje MIT Lisansı altında lisanslanmıştır - detaylar için [LICENSE](LIC
 
 ## 👨‍💻 Geliştirici
 
-**Adınız**
+**Ali Özkan Maviş**
 
-- GitHub: [@kullaniciadi](https://github.com/kullaniciadi)
-- LinkedIn: [LinkedIn Profiliniz](https://linkedin.com/in/profiliniz)
-- Email: email@example.com
+- GitHub: [@Aliozka-n](https://github.com/Aliozka-n)
+- LinkedIn: [Ali Özkan Maviş](https://www.linkedin.com/in/ali-%C3%B6zkan-mavis/)
 
 ---
 
